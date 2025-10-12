@@ -1,0 +1,182 @@
+# ============================
+# UNIVERSAL .GITIGNORE FILE
+# Covers: Node.js, Python, React, Next.js, Flask, Django, macOS, Linux, VSCode, etc.
+# ============================
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
+*.lnk
+
+# --- Logs & Debug ---
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.out
+*.err
+*.pid
+*.seed
+*.pid.lock
+
+# --- Node.js / JS / TS ---
+node_modules/
+jspm_packages/
+dist/
+build/
+.next/
+out/
+coverage/
+.nyc_output/
+bower_components/
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+.eggs/
+build/
+develop-eggs/
+dist/
+downloads/
+sdist/
+pip-wheel-metadata/
+.wheelhouse/
+.pytest_cache/
+.tox/
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+*.sqlite3
+.env/
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+instance/
+.migrations/
+
+# --- Environments / Secrets ---
+.env
+.env.*
+!.env.example
+.secret
+secrets.json
+*.pem
+*.key
+
+# --- IDEs & Editors ---
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+*.rej
+*.iml
+
+# --- OS / Tooling caches ---
+*.swp
+*~
+.cache/
+.tmp/
+temp/
+tmp/
+logs/
+*.lock
+.lock-wscript
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# --- Frontend / Frameworks ---
+public/static/
+staticfiles/
+.sass-cache/
+.next/
+.nuxt/
+out/
+storybook-static/
+*.map
+
+# --- Databases & Dumps ---
+*.sql
+*.sqlite
+*.sqlite3
+dump.rdb
+*.bak
+
+# --- Test / Coverage ---
+coverage/
+*.lcov
+test-results/
+jest-html-reporters-*
+
+# --- Docker / Containers ---
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+*.tar
+*.img
+
+# --- Misc Build Artifacts ---
+*.manifest
+*.spec
+*.pyc
+*.exe
+*.dll
+*.so
+*.dylib
+*.class
+*.war
+*.jar
+
+# --- Mac / Linux trash ---
+.Trashes
+*.Trash-*
+*~ 
+.nfs*
+
+# --- VSCode Specific ---
+.history/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# --- JetBrains ---
+.idea/
+*.iws
+*.ipr
+*.iml
+
+# --- Others ---
+coverage-final.json
+firebase-debug.log
+functions/lib/
+functions/node_modules/
+android/
+ios/
+Pods/
+*.xcworkspace
+*.xcuserstate

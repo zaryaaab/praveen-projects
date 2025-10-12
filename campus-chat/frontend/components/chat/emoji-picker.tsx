@@ -1,0 +1,178 @@
+"use client"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+
+interface EmojiPickerProps {
+  onEmojiSelect: (emoji: string) => void
+  onClose: () => void
+}
+
+const emojis = [
+  "😀",
+  "😃",
+  "😄",
+  "😁",
+  "😆",
+  "😅",
+  "😂",
+  "🤣",
+  "😊",
+  "😇",
+  "🙂",
+  "🙃",
+  "😉",
+  "😌",
+  "😍",
+  "🥰",
+  "😘",
+  "😗",
+  "😙",
+  "😚",
+  "😋",
+  "😛",
+  "😝",
+  "😜",
+  "🤪",
+  "🤨",
+  "🧐",
+  "🤓",
+  "😎",
+  "🤩",
+  "🥳",
+  "😏",
+  "😒",
+  "😞",
+  "😔",
+  "😟",
+  "😕",
+  "🙁",
+  "☹️",
+  "😣",
+  "😖",
+  "😫",
+  "😩",
+  "🥺",
+  "😢",
+  "😭",
+  "😤",
+  "😠",
+  "😡",
+  "🤬",
+  "🤯",
+  "😳",
+  "🥵",
+  "🥶",
+  "😱",
+  "😨",
+  "😰",
+  "😥",
+  "😓",
+  "🤗",
+  "🤔",
+  "🤭",
+  "🤫",
+  "🤥",
+  "😶",
+  "😐",
+  "😑",
+  "😬",
+  "🙄",
+  "😯",
+  "😦",
+  "😧",
+  "😮",
+  "😲",
+  "🥱",
+  "😴",
+  "🤤",
+  "😪",
+  "😵",
+  "🤐",
+  "🥴",
+  "🤢",
+  "🤮",
+  "🤧",
+  "😷",
+  "🤒",
+  "🤕",
+  "🤑",
+  "🤠",
+  "😈",
+  "👿",
+  "👹",
+  "👺",
+  "🤡",
+  "💩",
+  "👻",
+  "💀",
+  "☠️",
+  "👽",
+  "👾",
+  "🤖",
+  "🎃",
+  "😺",
+  "😸",
+  "😹",
+  "😻",
+  "😼",
+  "😽",
+  "🙀",
+  "😿",
+  "😾",
+  "👋",
+  "🤚",
+  "🖐️",
+  "✋",
+  "🖖",
+  "👌",
+  "🤏",
+  "✌️",
+  "🤞",
+  "🤟",
+  "🤘",
+  "🤙",
+  "👈",
+  "👉",
+  "👆",
+  "🖕",
+  "👇",
+  "☝️",
+  "👍",
+  "👎",
+  "👊",
+  "✊",
+  "🤛",
+  "🤜",
+  "👏",
+  "🙌",
+  "👐",
+  "🤲",
+  "🤝",
+  "🙏",
+  "✍️",
+  "💅",
+  "🤳",
+]
+
+export default function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
+  return (
+    <Card className="w-64 max-h-48 overflow-y-auto">
+      <CardContent className="p-2">
+        <div className="grid grid-cols-8 gap-1">
+          {emojis.map((emoji, index) => (
+            <Button
+              key={index}
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              onClick={() => onEmojiSelect(emoji)}
+            >
+              {emoji}
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
