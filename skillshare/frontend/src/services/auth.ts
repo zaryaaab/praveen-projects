@@ -19,21 +19,21 @@ interface RegisterData extends LoginData {
 export const authService = {
   async login(data: LoginData): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>('/auth/login', data);
-    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('tokenss', response.data.token);
     return response.data;
   },
 
   async register(data: RegisterData): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>('/auth/register', data);
-    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('tokenss', response.data.token);
     return response.data;
   },
 
   logout(): void {
-    localStorage.removeItem('token');
+    localStorage.removeItem('tokenss');
   },
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    return !!localStorage.getItem('tokenss');
   }
 }; 
