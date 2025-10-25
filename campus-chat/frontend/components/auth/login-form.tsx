@@ -32,7 +32,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setError("")
 
     try {
-      const res = await fetch("http://localhost:1005/api/users/login", {
+      const res = await fetch("http://147.79.68.160:8200/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })

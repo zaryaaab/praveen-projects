@@ -33,7 +33,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     }
 
     try {
-      const res = await fetch("http://localhost:1005/api/users/register", {
+      const res = await fetch("http://147.79.68.160:8200/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password })
