@@ -63,7 +63,6 @@ pip-wheel-metadata/
 .pyre/
 .pytype/
 *.sqlite3
-.env/
 .venv/
 venv/
 ENV/
@@ -73,8 +72,6 @@ instance/
 .migrations/
 
 # --- Environments / Secrets ---
-.env
-.env.*
 !.env.example
 .secret
 secrets.json
