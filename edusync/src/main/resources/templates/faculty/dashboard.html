@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Faculty Dashboard</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <!-- Page Content -->
+            <h2 class="mb-4">Faculty Dashboard</h2>
+            
+            <div class="alert alert-info" th:if="${faculty != null}">
+                <h4>Welcome, <span th:text="${faculty.user.fullName}">Faculty Name</span>!</h4>
+                <p>Faculty ID: <span th:text="${faculty.facultyId}">F12345</span></p>
+                <p th:if="${faculty.department != null}">Department: <span th:text="${faculty.department}">Computer Science</span></p>
+                <p th:if="${faculty.designation != null}">Designation: <span th:text="${faculty.designation}">Assistant Professor</span></p>
+            </div>
+            
+            <div class="row">
+                <!-- Quick Stats -->
+                <div class="col-md-12 mb-4">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Courses</h5>
+                                    <p class="card-text display-6" th:text="${courseCount != null ? courseCount : '0'}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Students</h5>
+                                    <p class="card-text display-6" th:text="${studentCount != null ? studentCount : '0'}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body">
+                                    <h5 class="card-title">Assignments</h5>
+                                    <p class="card-text display-6" th:text="${assignmentCount != null ? assignmentCount : '0'}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Upcoming Exams</h5>
+                                    <p class="card-text display-6" th:text="${examCount != null ? examCount : '0'}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pending Submissions -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Pending Submissions</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">No pending submissions found.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Classes -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Upcoming Classes</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">No upcoming classes found.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Create Announcement -->
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Create Announcement</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="/faculty/dashboard" method="post">
+                                <div class="mb-3">
+                                    <label for="announcementTitle" class="form-label">Title</label>
+                                    <input type="text" class="form-control" id="announcementTitle" name="title" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="announcementContent" class="form-label">Content</label>
+                                    <textarea class="form-control" id="announcementContent" name="content" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="courseSelect" class="form-label">Course</label>
+                                    <select class="form-select" id="courseSelect" name="courseId">
+                                        <option value="">Select Course</option>
+                                        <option th:each="course : ${faculty != null ? faculty.courses : {}}" 
+                                                th:value="${course.id}"
+                                                th:text="${course.courseCode + ' - ' + course.courseName}">
+                                            CS101 - Introduction to Computer Science
+                                        </option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Post Announcement</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Announcements -->
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">Recent Announcements</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="nav nav-tabs" id="announcementTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-announcements" type="button" role="tab" aria-controls="all-announcements" aria-selected="true">All</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="my-tab" data-bs-toggle="tab" data-bs-target="#my-announcements" type="button" role="tab" aria-controls="my-announcements" aria-selected="false">My Announcements</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content p-3" id="announcementTabsContent">
+                                <!-- All Announcements Tab -->
+                                <div class="tab-pane fade show active" id="all-announcements" role="tabpanel" aria-labelledby="all-tab">
+                                    <div th:if="${announcements == null || announcements.empty}">
+                                        <p class="text-muted">No recent announcements found.</p>
+                                    </div>
+                                    <div th:if="${announcements != null && !announcements.empty}">
+                                        <div class="list-group">
+                                            <div th:each="announcement : ${announcements}" class="list-group-item list-group-item-action">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h5 class="mb-1" th:text="${announcement.title}">Announcement Title</h5>
+                                                    <small th:text="${#temporals.format(announcement.postDate, 'dd MMM yyyy HH:mm')}">01 Jan 2023</small>
+                                                </div>
+                                                <p class="mb-1" th:text="${announcement.content}">Announcement content goes here...</p>
+                                                <small>
+                                                    <span th:if="${announcement.faculty != null}">
+                                                        By: <span th:text="${announcement.faculty.user.fullName}">Faculty Name</span>
+                                                    </span>
+                                                    <span th:if="${announcement.course != null}" class="ms-2">
+                                                        Course: <span th:text="${announcement.course.courseName}">Course Name</span>
+                                                    </span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- My Announcements Tab -->
+                                <div class="tab-pane fade" id="my-announcements" role="tabpanel" aria-labelledby="my-tab">
+                                    <div th:if="${facultyAnnouncements == null || facultyAnnouncements.empty}">
+                                        <p class="text-muted">You haven't created any announcements yet.</p>
+                                    </div>
+                                    <div th:if="${facultyAnnouncements != null && !facultyAnnouncements.empty}">
+                                        <div class="list-group">
+                                            <div th:each="announcement : ${facultyAnnouncements}" class="list-group-item list-group-item-action">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h5 class="mb-1" th:text="${announcement.title}">Announcement Title</h5>
+                                                    <small th:text="${#temporals.format(announcement.postDate, 'dd MMM yyyy HH:mm')}">01 Jan 2023</small>
+                                                </div>
+                                                <p class="mb-1" th:text="${announcement.content}">Announcement content goes here...</p>
+                                                <small th:if="${announcement.course != null}">
+                                                    Course: <span th:text="${announcement.course.courseName}">Course Name</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Academic Timetable -->
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Weekly Schedule</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Monday</th>
+                                        <th>Tuesday</th>
+                                        <th>Wednesday</th>
+                                        <th>Thursday</th>
+                                        <th>Friday</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>09:00 - 10:30</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>10:45 - 12:15</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>13:00 - 14:30</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>14:45 - 16:15</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

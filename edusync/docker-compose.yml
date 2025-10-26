@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  edusync-app:
+    build: .
+    ports:
+      - "3800:3800"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    volumes:
+      - ./data:/app/data 

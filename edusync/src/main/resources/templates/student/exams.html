@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Exam Schedule</title>
+    <style>
+        .countdown-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .countdown-item {
+            margin: 0 10px;
+            text-align: center;
+        }
+        .countdown-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .countdown-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .exam-alert-imminent {
+            border-left: 5px solid #dc3545;
+        }
+        .exam-alert-upcoming {
+            border-left: 5px solid #ffc107;
+        }
+        .exam-alert-future {
+            border-left: 5px solid #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <!-- Page Content -->
+            <h2 class="mb-4">Your Exam Schedule</h2>
+            
+            <!-- Upcoming Exams Alert Section -->
+            <div class="card mb-4" th:if="${upcomingExams != null && !upcomingExams.empty}">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Upcoming Exams Alert
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div th:each="exam, examStat : ${upcomingExams}" th:if="${examStat.index < 3}"
+                         th:with="isImminent=${exam.examDate.isBefore(#temporals.createNow().plusDays(3))},
+                                  isUpcoming=${exam.examDate.isBefore(#temporals.createNow().plusDays(8))}"
+                         th:class="${'alert ' + (isImminent ? 'alert-danger exam-alert-imminent' : 
+                                            (isUpcoming ? 'alert-warning exam-alert-upcoming' : 
+                                            'alert-primary exam-alert-future'))}"
+                         th:data-exam-date="${#temporals.format(exam.examDate, 'yyyy-MM-dd HH:mm:ss')}">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h5 class="alert-heading" th:text="${exam.examTitle}">Midterm Exam</h5>
+                                <p class="mb-0">
+                                    <strong>Course:</strong> <span th:text="${exam.course.courseName}">Database Systems</span>
+                                    <br>
+                                    <strong>Date & Time:</strong> 
+                                    <span th:text="${#temporals.format(exam.examDate, 'EEEE, MMM dd, yyyy')}">Monday, Dec 15, 2023</span>
+                                    at
+                                    <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                    <br>
+                                    <strong>Location:</strong> <span th:text="${exam.location}">Room 101</span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <div th:if="${exam.examDate.isAfter(#temporals.createNow())}" class="countdown-container" id="countdown-container">
+                                    <div class="countdown-item">
+                                        <div class="countdown-value days">--</div>
+                                        <div class="countdown-label">Days</div>
+                                    </div>
+                                    <div class="countdown-item">
+                                        <div class="countdown-value hours">--</div>
+                                        <div class="countdown-label">Hours</div>
+                                    </div>
+                                    <div class="countdown-item">
+                                        <div class="countdown-value minutes">--</div>
+                                        <div class="countdown-label">Minutes</div>
+                                    </div>
+                                    <div class="countdown-item">
+                                        <div class="countdown-value seconds">--</div>
+                                        <div class="countdown-label">Seconds</div>
+                                    </div>
+                                </div>
+                                
+                                <div th:if="${exam.examDate.isBefore(#temporals.createNow())}" class="alert alert-secondary">
+                                    This exam has already taken place.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${upcomingExams.size() > 3}" class="text-center mt-3">
+                        <span class="badge bg-primary">+<span th:text="${upcomingExams.size() - 3}">2</span> more upcoming exams</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No Upcoming Exams Message -->
+            <div class="alert alert-info mb-4" th:if="${upcomingExams == null || upcomingExams.empty}">
+                <i class="bi bi-info-circle"></i>
+                You have no upcoming exams scheduled at this time.
+            </div>
+            
+            <!-- Full Exam Schedule -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Complete Exam Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${allExams == null || allExams.empty}">
+                        <p class="text-muted">No exams are currently scheduled for your courses.</p>
+                    </div>
+                    
+                    <div th:if="${allExams != null && !allExams.empty}">
+                        <ul class="nav nav-tabs mb-3" id="examTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="list-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#list-view" type="button" role="tab"
+                                        aria-controls="list-view" aria-selected="true">
+                                    <i class="bi bi-list-ul"></i> List View
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#calendar-view" type="button" role="tab"
+                                        aria-controls="calendar-view" aria-selected="false">
+                                    <i class="bi bi-calendar-week"></i> Calendar View
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="examTabContent">
+                            <!-- List View Tab -->
+                            <div class="tab-pane fade show active" id="list-view" role="tabpanel" aria-labelledby="list-tab">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Exam Title</th>
+                                                <th>Course</th>
+                                                <th>Date & Time</th>
+                                                <th>Duration</th>
+                                                <th>Location</th>
+                                                <th>Type</th>
+                                                <th>Total Marks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="exam : ${allExams}">
+                                                <td th:text="${exam.examTitle}">Midterm Exam</td>
+                                                <td th:text="${exam.course.courseName}">Database Systems</td>
+                                                <td th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy HH:mm')}">Dec 15, 2023 09:00</td>
+                                                <td th:text="${exam.examDuration}">120 minutes</td>
+                                                <td th:text="${exam.location}">Room 101</td>
+                                                <td>
+                                                    <span th:text="${exam.examType}" 
+                                                          th:class="${exam.examType == 'Final' ? 'badge bg-danger' : 
+                                                                    (exam.examType == 'Midterm' ? 'badge bg-warning text-dark' : 
+                                                                    (exam.examType == 'Quiz' ? 'badge bg-info text-dark' : 'badge bg-secondary'))}">
+                                                        Midterm
+                                                    </span>
+                                                </td>
+                                                <td th:text="${exam.totalMarks}">100</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Calendar View Tab -->
+                            <div class="tab-pane fade" id="calendar-view" role="tabpanel" aria-labelledby="calendar-tab">
+                                <div class="d-flex justify-content-center">
+                                    <div class="alert alert-secondary" role="alert">
+                                        <i class="bi bi-calendar"></i>
+                                        Calendar view will show a visual representation of your exam schedule.
+                                    </div>
+                                </div>
+                                
+                                <!-- Simple calendar view - grouped by month -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <!-- Only display calendar if allExams is not null and not empty -->
+                                        <div th:if="${allExams == null || allExams.empty}" class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> No exams found to display in the calendar view.
+                                        </div>
+                                        
+                                        <!-- January -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 1].size() > 0}" class="mb-4">
+                                            <h5>January</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 1}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Jan 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- February -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 2].size() > 0}" class="mb-4">
+                                            <h5>February</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 2}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Feb 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- March -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 3].size() > 0}" class="mb-4">
+                                            <h5>March</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 3}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Mar 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- April -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 4].size() > 0}" class="mb-4">
+                                            <h5>April</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 4}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Apr 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- May -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 5].size() > 0}" class="mb-4">
+                                            <h5>May</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 5}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">May 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- June -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 6].size() > 0}" class="mb-4">
+                                            <h5>June</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 6}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Jun 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- July -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 7].size() > 0}" class="mb-4">
+                                            <h5>July</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 7}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Jul 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- August -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 8].size() > 0}" class="mb-4">
+                                            <h5>August</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 8}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Aug 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- September -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 9].size() > 0}" class="mb-4">
+                                            <h5>September</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 9}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Sep 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- October -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 10].size() > 0}" class="mb-4">
+                                            <h5>October</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 10}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Oct 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- November -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 11].size() > 0}" class="mb-4">
+                                            <h5>November</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 11}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Nov 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- December -->
+                                        <div th:if="${allExams != null && allExams.?[#temporals.month(examDate) == 12].size() > 0}" class="mb-4">
+                                            <h5>December</h5>
+                                            <div class="list-group">
+                                                <div th:each="exam : ${allExams}" th:if="${#temporals.month(exam.examDate) == 12}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h6>
+                                                        <small th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Dec 15, 2023</small>
+                                                    </div>
+                                                    <p class="mb-1">
+                                                        <span th:text="${exam.course.courseName}">Database Systems</span>
+                                                        <span class="badge bg-secondary ms-2" th:text="${exam.examType}">Midterm</span>
+                                                    </p>
+                                                    <small>
+                                                        <i class="bi bi-clock"></i> <span th:text="${#temporals.format(exam.examDate, 'hh:mm a')}">09:00 AM</span>
+                                                        <i class="bi bi-geo-alt ms-2"></i> <span th:text="${exam.location}">Room 101</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+    
+    <!-- Include Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Make sure Bootstrap JS is loaded properly -->
+    <script>
+        // Initialize tabs when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if Bootstrap's tab functionality is available
+            if (typeof bootstrap !== 'undefined') {
+                // Enable tabs via JavaScript
+                var tabElms = document.querySelectorAll('button[data-bs-toggle="tab"]');
+                tabElms.forEach(function(tabEl) {
+                    new bootstrap.Tab(tabEl);
+                });
+            } else {
+                console.error('Bootstrap JavaScript is not loaded properly');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all upcoming exam alerts with date attributes
+            const examAlerts = document.querySelectorAll('[data-exam-date]');
+            
+            // Set up countdown for each exam
+            examAlerts.forEach(function(alert) {
+                // Get the exam date from the data attribute
+                const examDate = new Date(alert.getAttribute('data-exam-date'));
+                
+                // Find countdown elements
+                const daysElement = alert.querySelector('.countdown-value.days');
+                const hoursElement = alert.querySelector('.countdown-value.hours');
+                const minutesElement = alert.querySelector('.countdown-value.minutes');
+                const secondsElement = alert.querySelector('.countdown-value.seconds');
+                
+                // Only set up countdown if we found the elements
+                if (daysElement && hoursElement && minutesElement && secondsElement) {
+                    // Update countdown function
+                    function updateCountdown() {
+                        // Get current date and calculate difference in milliseconds
+                        const now = new Date();
+                        let difference = examDate - now;
+                        
+                        // If exam has passed, don't show negative values
+                        if (difference <= 0) {
+                            daysElement.textContent = '0';
+                            hoursElement.textContent = '0';
+                            minutesElement.textContent = '0';
+                            secondsElement.textContent = '0';
+                            return;
+                        }
+                        
+                        // Calculate time units
+                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                        difference -= days * (1000 * 60 * 60 * 24);
+                        
+                        const hours = Math.floor(difference / (1000 * 60 * 60));
+                        difference -= hours * (1000 * 60 * 60);
+                        
+                        const minutes = Math.floor(difference / (1000 * 60));
+                        difference -= minutes * (1000 * 60);
+                        
+                        const seconds = Math.floor(difference / 1000);
+                        
+                        // Update the elements
+                        daysElement.textContent = days;
+                        hoursElement.textContent = hours;
+                        minutesElement.textContent = minutes;
+                        secondsElement.textContent = seconds;
+                    }
+                    
+                    // Initial update
+                    updateCountdown();
+                    
+                    // Set interval to update every second (1000 milliseconds) instead of every minute
+                    setInterval(updateCountdown, 1000);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

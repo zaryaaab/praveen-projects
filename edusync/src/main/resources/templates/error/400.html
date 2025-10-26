@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Bad Request</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 mt-5">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h4 class="mb-0">Bad Request</h4>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="mb-4">
+                                <span class="display-1 text-warning">400</span>
+                            </div>
+                            <h4 class="mb-3">Invalid Request</h4>
+                            <p class="mb-4">The server could not understand your request due to invalid syntax or missing parameters.</p>
+                            <p>
+                                <a href="/" class="btn btn-primary">Go to Home</a>
+                                <a href="javascript:history.back()" class="btn btn-secondary ms-2">Go Back</a>
+                            </p>
+                            <div class="alert alert-light text-start small mt-4" th:if="${message != null}">
+                                <p>Error details: <span th:text="${message}">Error message</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html> 

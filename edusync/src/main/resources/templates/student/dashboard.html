@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Student Dashboard</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <!-- Page Content -->
+            <h2 class="mb-4">Student Dashboard</h2>
+            
+            <div class="alert alert-info" th:if="${student != null}">
+                <h4>Welcome, <span th:text="${student.user.fullName}">Student Name</span>!</h4>
+                <p>Student ID: <span th:text="${student.studentId}">12345</span></p>
+                <p th:if="${student.department != null}">Department: <span th:text="${student.department}">Computer Science</span></p>
+                <p th:if="${student.semester != null}">Semester: <span th:text="${student.semester}">1</span></p>
+            </div>
+            
+            <div class="row">
+                <!-- Stats Overview Cards -->
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <div class="row g-0">
+                                <div class="col-md-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Enrolled Courses</h5>
+                                            <p class="card-text display-6" th:text="${courses != null ? courses : '0'}">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Upcoming Exams</h5>
+                                            <p class="card-text display-6" th:text="${examCount != null ? examCount : '0'}">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-warning text-dark">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Assignments</h5>
+                                            <p class="card-text display-6" th:text="${assignmentCount != null ? assignmentCount : '0'}">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Current GPA</h5>
+                                            <p class="card-text display-6">0.0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Assignments -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Upcoming Assignments</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${upcomingAssignments == null || upcomingAssignments.empty}">
+                                <p class="text-muted">No upcoming assignments found.</p>
+                            </div>
+                            <div th:if="${upcomingAssignments != null && !upcomingAssignments.empty}">
+                                <div class="list-group">
+                                    <a th:each="assignment, assignmentStat : ${upcomingAssignments}" th:if="${assignmentStat.index < 3}" 
+                                       th:href="@{/student/assignments/{id}(id=${assignment.id})}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h5 class="mb-1" th:text="${assignment.title}">Assignment Title</h5>
+                                            <small class="text-muted" 
+                                                  th:text="${#temporals.format(assignment.dueDate, 'MMM dd, yyyy')}">Dec 15, 2023</small>
+                                        </div>
+                                        <p class="mb-1">
+                                            <span th:text="${assignment.course.courseName}">Database Systems</span>
+                                            <span class="badge bg-info" th:text="${'Marks: ' + assignment.totalMarks}">Marks: 100</span>
+                                        </p>
+                                    </a>
+                                </div>
+                                <div th:if="${upcomingAssignments.size() > 3}" class="mt-2">
+                                    <a th:href="@{/student/assignments}" class="btn btn-sm btn-outline-primary">View all assignments</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Exams -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Upcoming Exams</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${upcomingExams == null || upcomingExams.empty}">
+                            <p class="text-muted">No upcoming exams found.</p>
+                            </div>
+                            <div th:if="${upcomingExams != null && !upcomingExams.empty}">
+                                <div class="list-group">
+                                    <a th:each="exam, examStat : ${upcomingExams}" th:if="${examStat.index < 3}" 
+                                       th:href="@{/student/exams}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h5 class="mb-1" th:text="${exam.examTitle}">Midterm Exam</h5>
+                                            <small class="text-muted" 
+                                                  th:text="${#temporals.format(exam.examDate, 'MMM dd, yyyy')}">Dec 15, 2023</small>
+                                        </div>
+                                        <p class="mb-1">
+                                            <span th:text="${exam.course.courseName}">Database Systems</span>
+                                            <span class="badge bg-secondary" th:text="${exam.examType}">Midterm</span>
+                                        </p>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i> 
+                                            <span th:text="${#temporals.format(exam.examDate, 'HH:mm')}">09:00</span> | 
+                                            <i class="bi bi-geo-alt"></i> 
+                                            <span th:text="${exam.location}">Room 101</span>
+                                        </small>
+                                    </a>
+                                </div>
+                                <div th:if="${upcomingExams.size() > 3}" class="mt-2">
+                                    <a th:href="@{/student/exams}" class="btn btn-sm btn-outline-warning">View all exams</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Announcements -->
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Recent Announcements</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${announcements == null || announcements.empty}">
+                                <p class="text-muted">No recent announcements found.</p>
+                            </div>
+                            <div th:if="${announcements != null && !announcements.empty}">
+                                <div class="list-group">
+                                    <div th:each="announcement : ${announcements}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h5 class="mb-1" th:text="${announcement.title}">Announcement Title</h5>
+                                            <small th:text="${#temporals.format(announcement.postDate, 'dd MMM yyyy HH:mm')}">01 Jan 2023</small>
+                                        </div>
+                                        <p class="mb-1" th:text="${announcement.content}">Announcement content goes here...</p>
+                                        <small>
+                                            <span th:if="${announcement.faculty != null}">
+                                                By: <span th:text="${announcement.faculty.user.fullName}">Faculty Name</span>
+                                            </span>
+                                            <span th:if="${announcement.course != null}" class="ms-2">
+                                                Course: <span th:text="${announcement.course.courseName}">Course Name</span>
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Academic Timetable -->
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Weekly Timetable</h5>
+                            <a th:href="@{/student/timetable}" class="btn btn-sm btn-light">View Full Timetable</a>
+                        </div>
+                        <div class="card-body">
+                            <!-- Today's Schedule -->
+                            <div class="mb-4" th:if="${todaySchedules != null}">
+                                <h6 class="border-bottom pb-2">Today's Schedule</h6>
+                                
+                                <div th:if="${todaySchedules.empty}" class="text-muted">
+                                    <i class="bi bi-info-circle"></i> No classes scheduled for today.
+                                </div>
+                                
+                                <div th:each="schedule : ${todaySchedules}" class="d-flex align-items-center mb-2 p-2 border-start"
+                                    th:style="'border-left-width: 4px!important; border-left-color: ' + 
+                                            ${schedule.type.name() == 'LECTURE' ? '#0d6efd' : 
+                                              (schedule.type.name() == 'LAB' ? '#198754' : 
+                                               (schedule.type.name() == 'TUTORIAL' ? '#ffc107' : 
+                                                (schedule.type.name() == 'DISCUSSION' ? '#dc3545' : '#6c757d')))}">
+                                    <div class="me-3 text-center">
+                                        <div class="fw-bold" th:text="${#temporals.format(schedule.startTime, 'HH:mm')}">09:00</div>
+                                        <div class="small text-muted" th:text="${#temporals.format(schedule.endTime, 'HH:mm')}">10:30</div>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold" th:text="${schedule.course.courseName}">Introduction to Programming</div>
+                                        <div class="small text-muted">
+                                            <span th:text="${schedule.type}">LECTURE</span> at 
+                                            <span th:text="${schedule.location}">Room 101</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Weekly Timetable Grid -->
+                            <div th:if="${weekSchedules != null && weekdays != null}">
+                                <h6 class="border-bottom pb-2">Weekly Overview</h6>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                                <th style="width: 16%">Monday</th>
+                                                <th style="width: 16%">Tuesday</th>
+                                                <th style="width: 16%">Wednesday</th>
+                                                <th style="width: 16%">Thursday</th>
+                                                <th style="width: 16%">Friday</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                                <!-- For each weekday -->
+                                                <td th:each="day : ${weekdays}" class="p-1" th:style="${day == currentDayOfWeek} ? 'background-color: rgba(13, 110, 253, 0.05);' : ''">
+                                                    <!-- Get schedules for this day -->
+                                                    <div th:if="${weekSchedules.get(day) != null && !weekSchedules.get(day).empty}">
+                                                        <div th:each="schedule : ${weekSchedules.get(day)}" class="mb-1 p-1 rounded"
+                                                            th:style="'font-size: 0.8rem; background-color: ' + 
+                                                                    ${schedule.type.name() == 'LECTURE' ? '#cfe2ff' : 
+                                                                      (schedule.type.name() == 'LAB' ? '#d1e7dd' : 
+                                                                       (schedule.type.name() == 'TUTORIAL' ? '#fff3cd' : 
+                                                                        (schedule.type.name() == 'DISCUSSION' ? '#f8d7da' : '#e2e3e5')))}">
+                                                            <div class="fw-bold" th:text="${schedule.course.courseCode}">CS101</div>
+                                                            <div class="small">
+                                                                <span th:text="${#temporals.format(schedule.startTime, 'HH:mm')}">09:00</span> - 
+                                                                <span th:text="${#temporals.format(schedule.endTime, 'HH:mm')}">10:30</span>
+                                                            </div>
+                                                            <div class="small text-muted" th:text="${schedule.location}">Room 101</div>
+                                                        </div>
+                                                    </div>
+                                                    <div th:if="${weekSchedules.get(day) == null || weekSchedules.get(day).empty}" 
+                                                        class="text-center p-2 text-muted small">
+                                                        No classes
+                                                    </div>
+                                                </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                                </div>
+                                <div class="text-end">
+                                    <a th:href="@{/student/timetable}" class="btn btn-sm btn-success">View Detailed Timetable</a>
+                                </div>
+                            </div>
+                            
+                            <!-- No Schedule Data Yet -->
+                            <div th:if="${weekSchedules == null || (todaySchedules == null && weekSchedules.isEmpty())}">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> No timetable data is available for your courses yet.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

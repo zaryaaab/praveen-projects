@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Faculty Directory</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <!-- Page Content -->
+            <h2 class="mb-4">Faculty Directory</h2>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">All Faculty</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${facultyList == null || facultyList.empty}">
+                                <p class="text-muted">No faculty found.</p>
+                            </div>
+                            <div th:if="${facultyList != null && !facultyList.empty}">
+                                <div class="row row-cols-1 row-cols-md-3 g-4">
+                                    <div th:each="faculty : ${facultyList}" class="col">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title" th:text="${faculty.user.fullName}">Faculty Name</h5>
+                                                <p class="card-text mb-1">
+                                                    <strong>Department:</strong> 
+                                                    <span th:text="${faculty.department != null ? faculty.department : 'Not specified'}">
+                                                        Computer Science
+                                                    </span>
+                                                </p>
+                                                <p class="card-text mb-1">
+                                                    <strong>Designation:</strong> 
+                                                    <span th:text="${faculty.designation != null ? faculty.designation : 'Not specified'}">
+                                                        Assistant Professor
+                                                    </span>
+                                                </p>
+                                                <p class="card-text">
+                                                    <strong>Email:</strong> <span th:text="${faculty.user.email}">email@example.com</span>
+                                                </p>
+                                            </div>
+                                            <div class="card-footer bg-white border-top-0">
+                                                <a th:href="@{'/faculty-profile/' + ${faculty.id}}" class="btn btn-primary">
+                                                    View Office Hours
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html> 

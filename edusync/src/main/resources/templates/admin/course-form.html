@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Course Form</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <!-- Page Content -->
+            <h2 class="mb-4" th:text="${isNew ? 'Create New Course' : 'Edit Course'}">Course Form</h2>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0" th:text="${isNew ? 'New Course Details' : 'Course Details'}">Course Details</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/courses/save}" method="post" th:object="${course}">
+                        <!-- Hidden ID field for updates -->
+                        <input type="hidden" th:field="*{id}" />
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="courseCode" class="form-label">Course Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="courseCode" th:field="*{courseCode}" required>
+                                <div class="form-text">Example: CS101, MATH201, etc.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="courseName" class="form-label">Course Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="courseName" th:field="*{courseName}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="creditHours" class="form-label">Credit Hours</label>
+                                <input type="number" class="form-control" id="creditHours" th:field="*{creditHours}" min="1" max="6">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="faculty" class="form-label">Faculty</label>
+                                <select class="form-select" id="faculty" th:field="*{faculty}">
+                                    <option value="">-- Select Faculty --</option>
+                                    <option th:each="faculty : ${faculties}" 
+                                            th:value="${faculty.id}" 
+                                            th:text="${faculty.user.fullName + ' (' + faculty.facultyId + ')'}">
+                                        Professor Name (F12345)
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a th:href="@{/admin/courses}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Course
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</body>
+</html> 

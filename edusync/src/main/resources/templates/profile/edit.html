@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Edit Profile</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <!-- Page Content -->
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card mt-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">Edit Profile</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" th:action="@{/profile/edit}" th:object="${user}">
+                                <!-- Hidden ID field to identify the user -->
+                                <input type="hidden" th:field="*{id}" />
+                                
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="fullName" th:field="*{fullName}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" th:field="*{username}" readonly>
+                                    <small class="text-muted">Username cannot be changed</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                </div>
+                                
+                                <!-- Student-specific fields -->
+                                <div th:if="${student != null}" class="border p-3 mb-3 rounded">
+                                    <h5 class="mb-3">Student Information</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label for="studentId" class="form-label">Student ID</label>
+                                        <input type="text" class="form-control" id="studentId" name="studentId" th:value="${student.studentId}" readonly>
+                                        <small class="text-muted">Student ID cannot be changed</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="department" class="form-label">Department</label>
+                                        <input type="text" class="form-control" id="department" name="department" th:value="${student.department}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="semester" class="form-label">Semester</label>
+                                        <input type="number" class="form-control" id="semester" name="semester" th:value="${student.semester}" min="1">
+                                    </div>
+                                </div>
+                                
+                                <!-- Faculty-specific fields -->
+                                <div th:if="${faculty != null}" class="border p-3 mb-3 rounded">
+                                    <h5 class="mb-3">Faculty Information</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label for="facultyId" class="form-label">Faculty ID</label>
+                                        <input type="text" class="form-control" id="facultyId" name="facultyId" th:value="${faculty.facultyId}" readonly>
+                                        <small class="text-muted">Faculty ID cannot be changed</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="facultyDepartment" class="form-label">Department</label>
+                                        <input type="text" class="form-control" id="facultyDepartment" name="facultyDepartment" th:value="${faculty.department}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="designation" class="form-label">Designation</label>
+                                        <input type="text" class="form-control" id="designation" name="designation" th:value="${faculty.designation}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="officeHours" class="form-label">Office Hours</label>
+                                        <input type="text" class="form-control" id="officeHours" name="officeHours" th:value="${faculty.officeHours}">
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a th:href="@{/profile}" class="btn btn-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html> 

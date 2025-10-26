@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - User Profile</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <!-- Page Content -->
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card mt-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">User Profile</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h5 class="mb-3">Personal Information</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th style="width: 200px">Full Name</th>
+                                                <td th:text="${user.fullName}">John Doe</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Username</th>
+                                                <td th:text="${user.username}">johndoe</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Email</th>
+                                                <td th:text="${user.email}">john.doe@example.com</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Role</th>
+                                                <td th:text="${user.role}">STUDENT</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Student-specific information -->
+                            <div class="row mb-4" th:if="${student != null}">
+                                <div class="col-md-12">
+                                    <h5 class="mb-3">Student Information</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th style="width: 200px">Student ID</th>
+                                                <td th:text="${student.studentId}">1234567</td>
+                                            </tr>
+                                            <tr th:if="${student.department != null}">
+                                                <th>Department</th>
+                                                <td th:text="${student.department}">Computer Science</td>
+                                            </tr>
+                                            <tr th:if="${student.semester != null}">
+                                                <th>Semester</th>
+                                                <td th:text="${student.semester}">3</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Enrolled Courses</th>
+                                                <td>
+                                                    <span th:if="${student.courses != null && !student.courses.isEmpty()}">
+                                                        <span th:text="${student.courses.size()}">3</span> courses
+                                                    </span>
+                                                    <span th:if="${student.courses == null || student.courses.isEmpty()}">
+                                                        No courses enrolled
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Faculty-specific information -->
+                            <div class="row mb-4" th:if="${faculty != null}">
+                                <div class="col-md-12">
+                                    <h5 class="mb-3">Faculty Information</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th style="width: 200px">Faculty ID</th>
+                                                <td th:text="${faculty.facultyId}">F1234</td>
+                                            </tr>
+                                            <tr th:if="${faculty.department != null}">
+                                                <th>Department</th>
+                                                <td th:text="${faculty.department}">Computer Science</td>
+                                            </tr>
+                                            <tr th:if="${faculty.designation != null}">
+                                                <th>Designation</th>
+                                                <td th:text="${faculty.designation}">Assistant Professor</td>
+                                            </tr>
+                                            <tr th:if="${faculty.officeHours != null}">
+                                                <th>Office Hours</th>
+                                                <td th:text="${faculty.officeHours}">Mon-Wed 2-4 PM</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Courses Teaching</th>
+                                                <td>
+                                                    <span th:if="${faculty.courses != null && !faculty.courses.isEmpty()}">
+                                                        <span th:text="${faculty.courses.size()}">2</span> courses
+                                                    </span>
+                                                    <span th:if="${faculty.courses == null || faculty.courses.isEmpty()}">
+                                                        No courses assigned
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a th:href="@{/profile/edit}" class="btn btn-primary">Edit Profile</a>
+                                <a th:href="@{/change-password}" class="btn btn-secondary">Change Password</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html> 

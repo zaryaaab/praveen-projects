@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Access Denied</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 mt-5">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h4 class="mb-0">Access Denied</h4>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="mb-4">
+                                <span class="display-1 text-danger">403</span>
+                            </div>
+                            <h4 class="mb-3">Sorry, you don't have permission to access this page.</h4>
+                            <p class="mb-4">The page you are trying to access is restricted. Please log in with appropriate credentials or contact an administrator if you believe this is an error.</p>
+                            <p>
+                                <a href="/" class="btn btn-primary">Go to Home</a>
+                                <a href="/login" class="btn btn-success ms-2">Login</a>
+                                <a href="javascript:history.back()" class="btn btn-secondary ms-2">Go Back</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html> 

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}">
+    <title>EduSync - Office Hours Management</title>
+</head>
+<body>
+    <nav th:replace="~{layout :: nav}"></nav>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <!-- Page Content -->
+            <h2 class="mb-4">Office Hours Management</h2>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Current Office Hours</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${officeHoursList == null || officeHoursList.empty}">
+                                <p class="text-muted">No office hours currently scheduled. Add your office hours below.</p>
+                            </div>
+                            <div th:if="${officeHoursList != null && !officeHoursList.empty}">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Day</th>
+                                                <th>Time</th>
+                                                <th>Location</th>
+                                                <th>Notes</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="oh : ${officeHoursList}">
+                                                <td th:text="${oh.dayOfWeek}">MONDAY</td>
+                                                <td>
+                                                    <span th:text="${#temporals.format(oh.startTime, 'HH:mm')}">09:00</span> - 
+                                                    <span th:text="${#temporals.format(oh.endTime, 'HH:mm')}">11:00</span>
+                                                </td>
+                                                <td th:text="${oh.location != null ? oh.location : '-'}">Room 101</td>
+                                                <td th:text="${oh.notes != null ? oh.notes : '-'}">By appointment</td>
+                                                <td>
+                                                    <form th:action="@{'/faculty/office-hours/delete/' + ${oh.id}}" method="post">
+                                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Add Office Hours</h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/faculty/office-hours/add}" method="post">
+                                <div class="mb-3">
+                                    <label for="dayOfWeek" class="form-label">Day of Week</label>
+                                    <select class="form-select" id="dayOfWeek" name="dayOfWeek" required>
+                                        <option th:each="day : ${daysOfWeek}" 
+                                                th:value="${day}" 
+                                                th:text="${day}">
+                                            MONDAY
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="startTime" class="form-label">Start Time</label>
+                                    <input type="time" class="form-control" id="startTime" name="startTime" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="endTime" class="form-label">End Time</label>
+                                    <input type="time" class="form-control" id="endTime" name="endTime" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="location" name="location" 
+                                           placeholder="e.g. Room 101, Office 203">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="2" 
+                                              placeholder="e.g. By appointment only, Drop-ins welcome"></textarea>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success">Add Office Hours</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html> 
