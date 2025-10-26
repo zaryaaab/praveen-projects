@@ -1,0 +1,134 @@
+<div class="book-search-container">
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+  <div *ngIf="error" class="error-message">
+    <mat-icon>error</mat-icon>
+    <span>{{error}}</span>
+  </div>
+
+  <div class="page-header">
+    <h1 class="page-title">Book Search</h1>
+    <p class="page-subtitle">Find and reserve books from our extensive collection</p>
+  </div>
+  
+  <!-- Search and Filters -->
+  <div class="search-filters">
+    <div class="search-bar">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search by title, author, or ISBN</mat-label>
+        <input matInput [formControl]="searchControl">
+        <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+      
+      <div class="view-toggle">
+        <button mat-icon-button [color]="viewType === 'grid' ? 'primary' : ''" (click)="setViewType('grid')">
+          <mat-icon>grid_view</mat-icon>
+        </button>
+        <button mat-icon-button [color]="viewType === 'list' ? 'primary' : ''" (click)="setViewType('list')">
+          <mat-icon>view_list</mat-icon>
+        </button>
+      </div>
+    </div>
+    
+    <div class="filters-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Category</mat-label>
+        <mat-select [formControl]="categoryControl">
+          <mat-option value="all">All Categories</mat-option>
+          <mat-option *ngFor="let category of categories" [value]="category">
+            {{category}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Availability</mat-label>
+        <mat-select [formControl]="availabilityControl">
+          <mat-option value="all">All Books</mat-option>
+          <mat-option value="available">Available Now</mat-option>
+          <mat-option value="unavailable">Currently Unavailable</mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      <div class="rating-filter">
+        <label>Minimum Rating: {{ratingControl.value}}</label>
+        <mat-slider
+          min="0"
+          max="5"
+          step="0.1"
+         
+          [formControl]="ratingControl">
+        </mat-slider>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Results Count -->
+  <div class="results-info">
+    <p>Showing {{filteredBooks.length}} of {{books.length}} books</p>
+    <button mat-stroked-button (click)="clearFilters()">
+      <mat-icon>filter_alt</mat-icon>
+      Clear Filters
+    </button>
+  </div>
+  
+  <!-- Books Display -->
+  <div class="books-grid" *ngIf="viewType === 'grid'">
+    <mat-card class="book-card" *ngFor="let book of filteredBooks">
+      <div class="book-cover">
+        <img [src]="book.coverImageBase64" [alt]="book.title">
+        <div class="book-badge" [ngClass]="{'available': book.status, 'unavailable': !book.status}">
+          {{book.status ? 'Available' : 'Unavailable'}}
+        </div>
+      </div>
+      <mat-card-content>
+        <h3 class="book-title">{{book.title}}</h3>
+        <p class="book-author">{{book.author}}</p>
+        <div class="book-meta">
+          <div class="book-rating">
+            <mat-icon class="star-icon">star</mat-icon>
+            <span>{{book.rating}}</span>
+          </div>
+          <span class="book-category">{{book.category}}</span>
+        </div>
+        <button mat-raised-button color="primary" class="reserve-button" [disabled]="book.status !== 'available'" (click)="reserveBook(book)">
+          Reserve Book
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  
+  <div class="books-list" *ngIf="viewType === 'list'">
+    <mat-card class="book-list-item" *ngFor="let book of filteredBooks">
+      <mat-card-content>
+        <div class="book-list-content">
+          <div class="book-thumbnail">
+            <img [src]="book.coverImageBase64" [alt]="book.title">
+          </div>
+          <div class="book-details">
+            <div class="book-header">
+              <h3 class="book-title">{{book.title}}</h3>
+              <div class="book-badge" [ngClass]="{'available': book.status === 'available', 'unavailable': book.status !== 'available'}">
+                {{book.status ? 'Available' : 'Unavailable'}}
+              </div>
+            </div>
+            <p class="book-author">{{book.author}}</p>
+            <p class="book-isbn">ISBN: {{book.isbn}}</p>
+            <div class="book-meta">
+              <div class="book-rating">
+                <mat-icon class="star-icon">star</mat-icon>
+                <span>{{book.rating}}</span>
+              </div>
+              <span class="book-category">{{book.category}}</span>
+            </div>
+            <p class="book-description">{{book.description}}</p>
+            <button mat-raised-button color="primary" (click)="reserveBook(book)">
+            Reserve Book
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+

@@ -1,0 +1,71 @@
+<div class="recommendations-container">
+    <div class="page-header">
+      <h1 class="page-title">Recommendations</h1>
+      <p class="page-subtitle">Discover books tailored to your interests and reading history</p>
+    </div>
+  
+    <mat-tab-group>
+      <mat-tab label="Personalized">
+        <div class="books-grid">
+          <mat-card class="book-card" *ngFor="let book of recommendedBooks">
+            <div class="book-cover">
+              <img [src]="book.coverImageBase64" [alt]="book.title">
+              <div class="book-badge" [ngClass]="{'available': book.status === 'available', 'unavailable': book.status !== 'available'}">
+                {{book.status === 'available' ? 'Available' : 'Unavailable'}}
+              </div>
+            </div>
+            <mat-card-content>
+              <h3 class="book-title">{{book.title}}</h3>
+              <p class="book-author">{{book.author}}</p>
+              <div class="book-meta">
+                <div class="book-rating">
+                  <mat-icon class="star-icon">star</mat-icon>
+                  <span>{{book.rating}}</span>
+                </div>
+                <span class="book-category">{{book.category}}</span>
+              </div>
+              <p class="book-description">{{book.description}}</p>
+              <div class="book-actions">
+                <button mat-raised-button color="primary" class="reserve-button" [disabled]="book.status !== 'available'" (click)="reserveBook(book)">
+                Reserve Book
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+  
+      <mat-tab label="Popular Books">
+        <div class="books-grid">
+          <mat-card class="book-card" *ngFor="let book of popularBooks">
+            <div class="book-cover">
+              <img [src]="book.coverImageBase64" [alt]="book.title">
+              <div class="book-badge" [ngClass]="{'available': book.status === 'available', 'unavailable': book.status !== 'available'}">
+                {{book.status === 'available' ? 'Available' : 'Unavailable'}}
+              </div>
+            </div>
+            <mat-card-content>
+              <h3 class="book-title">{{book.title}}</h3>
+              <p class="book-author">{{book.author}}</p>
+              <div class="book-meta">
+                <div class="book-rating">
+                  <mat-icon class="star-icon">star</mat-icon>
+                  <span>{{book.rating}}</span>
+                </div>
+                <span class="book-category">{{book.category}}</span>
+              </div>
+              <div class="popularity-badge">
+                <p class="popularity-title">Popular Choice</p>
+              </div>
+              <p class="book-description">{{book.description}}</p>
+              <button mat-raised-button color="primary" class="reserve-button" [disabled]="book.status !== 'available'" (click)="reserveBook(book)">
+               Reserve Book
+              </button>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+  
+  

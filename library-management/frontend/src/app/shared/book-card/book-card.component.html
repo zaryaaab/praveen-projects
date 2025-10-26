@@ -1,0 +1,24 @@
+<mat-card class="book-card">
+    <div class="book-cover">
+      <img [src]="book.coverImage" [alt]="book.title">
+      <div class="book-badge" [ngClass]="{'available': book.available, 'unavailable': !book.available}">
+        {{book.available ? 'Available' : 'Unavailable'}}
+      </div>
+    </div>
+    <mat-card-content>
+      <h3 class="book-title">{{book.title}}</h3>
+      <p class="book-author">{{book.author}}</p>
+      <div class="book-meta">
+        <div class="book-rating">
+          <mat-icon class="star-icon">star</mat-icon>
+          <span>{{book.rating}}</span>
+        </div>
+        <span class="book-category">{{book.category}}</span>
+      </div>
+      <button mat-raised-button color="primary" class="reserve-button" [disabled]="!book.available" (click)="reserveBook()">
+       Reserve Book
+      </button>
+    </mat-card-content>
+  </mat-card>
+  
+  

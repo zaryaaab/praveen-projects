@@ -1,0 +1,37 @@
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #sidenav mode="side" [opened]="!isHandset" class="sidenav" fixedInViewport>
+      <div class="sidenav-header">
+        <div class="logo-container">
+          <mat-icon class="logo-icon">menu_book</mat-icon>
+          <span class="logo-text">LibrarySystem</span>
+        </div>
+      </div>
+      
+      <mat-nav-list>
+        <h3 mat-subheader>Main Menu</h3>
+        <a mat-list-item *ngFor="let item of navItems" [routerLink]="item.route" [class.active]="isActive(item.route)">
+          <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
+          <span matListItemTitle>{{item.name}}</span>
+        </a>
+        
+        <div *ngIf="isAdminRouteShow()" class="main-content">
+        <mat-divider></mat-divider>
+        
+        <h3 mat-subheader>Settings</h3>
+        <a mat-list-item routerLink="/dashboard/admin" [class.active]="isActive('/dashboard/admin')">
+          <mat-icon matListItemIcon>settings</mat-icon>
+          <span matListItemTitle>Admin Panel</span>
+        </a>
+      </div>
+      </mat-nav-list>
+    </mat-sidenav>
+    
+    <mat-sidenav-content>
+      <app-header [sidenav]="sidenav" [isHandset]="isHandset"></app-header>
+      <div class="content-container">
+        <ng-content></ng-content>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+  
+  

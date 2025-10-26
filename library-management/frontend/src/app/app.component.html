@@ -1,0 +1,10 @@
+<div class="app-container">
+  <app-sidenav *ngIf="showSidebar">
+    <router-outlet></router-outlet>
+  </app-sidenav>
+  
+  <div *ngIf="!showSidebar" class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>
+

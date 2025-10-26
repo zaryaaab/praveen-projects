@@ -1,0 +1,44 @@
+<div class="home-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">Modern Library Management System</h1>
+        <p class="hero-subtitle">Streamline your library experience with our comprehensive digital solution</p>
+        <div class="hero-buttons">
+          <button mat-raised-button color="primary" (click)="navigateTo('/auth/login')">Login</button>
+          <button mat-stroked-button color="primary" (click)="navigateTo('/auth/register')">Register</button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Features Section -->
+    <div class="features-section">
+      <h2 class="section-title">Key Features</h2>
+      <div class="features-grid">
+        <mat-card class="feature-card" *ngFor="let feature of features">
+          <mat-card-content>
+            <mat-icon class="feature-icon">{{feature.icon}}</mat-icon>
+            <h3 class="feature-title">{{feature.title}}</h3>
+            <p class="feature-description">{{feature.description}}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3 class="footer-title">Library Management System</h3>
+          <p class="footer-copyright">© 2025 All Rights Reserved</p>
+        </div>
+        <div class="footer-links">
+          <a href="#" class="footer-link">About</a>
+          <a href="#" class="footer-link">Contact</a>
+          <a href="#" class="footer-link">Privacy Policy</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  
+  
