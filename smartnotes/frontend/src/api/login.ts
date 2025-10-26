@@ -26,7 +26,7 @@ export const login = async (credentials: LoginCredentials) => {
 		lastName: last_name,
 		username: credentials.username,
 	});
-	window.localStorage.setItem('token', token);
+	window.localStorage.setItem('tokensn', token);
 	return response;
 };
 
@@ -35,7 +35,7 @@ export const login = async (credentials: LoginCredentials) => {
  * @returns Promise containing the user's profile data or undefined if no token exists
  */
 export const fetchUserData = async () => {
-	const token = window.localStorage.getItem('token');
+	const token = window.localStorage.getItem('tokensn');
 	if (!token) {
 		return;
 	}

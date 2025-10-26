@@ -3,7 +3,7 @@ import { useSessionStore } from '../store/sessionStore';
 
 // Create Axios instance with default configuration for the backend API
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api', // Django backend URL
+  baseURL: 'http://147.79.68.160:8400/api', // Django backend URL
   timeout: 10000, // 10 seconds
   headers: {
     'accept': 'application/json'
@@ -13,7 +13,7 @@ const api: AxiosInstance = axios.create({
 // Add token to request headers for authentication
 api.interceptors.request.use(
   (config) => {
-    const token = useSessionStore.getState().token || window.localStorage.getItem('token');
+    const token = useSessionStore.getState().token || window.localStorage.getItem('tokensn');
     if (token) {
       config.headers.Authorization = `Token ${token}`;
     }
