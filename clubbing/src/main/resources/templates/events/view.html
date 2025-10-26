@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${event.title} + ' - ClubHub'">Event - ClubHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .event-hero {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .event-hero-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            padding: 2rem;
+        }
+        .info-item {
+            margin-bottom: 1.5rem;
+        }
+        .info-item h6 {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Success/Error Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${success}">Success message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span th:text="${error}">Error message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Event Hero Section -->
+                <div class="event-hero rounded mb-4"
+                     th:style="${event.imageUrl != null and !#strings.isEmpty(event.imageUrl)} ? 
+                               'background-image: url(' + ${event.imageUrl} + '); background-size: cover; background-position: center;' : ''">
+                    <div class="event-hero-content">
+                        <div class="row align-items-end">
+                            <div class="col-md-8">
+                                <h1 class="display-5 fw-bold mb-2" th:text="${event.title}">Event Title</h1>
+                                <p class="lead mb-0">
+                                    <i class="fas fa-building me-2"></i>
+                                    <span th:text="${event.clubName}">Club Name</span>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="bg-white text-dark rounded p-3">
+                                    <h5 class="mb-1" th:text="${event.formattedEventDateOnly}">Date</h5>
+                                    <p class="mb-0 text-muted" th:text="${event.formattedEventTime}">Time</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Content -->
+                <div class="row">
+                    <!-- Main Content -->
+                    <div class="col-lg-8">
+                        <!-- Event Details -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>Event Details
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Description -->
+                                <div class="info-item">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-align-left me-2"></i>Description
+                                    </h6>
+                                    <p th:text="${event.description}" class="mb-0">Event description goes here...</p>
+                                </div>
+
+                                <!-- Location -->
+                                <div class="info-item">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt me-2"></i>Location
+                                    </h6>
+                                    <p th:text="${event.location}" class="mb-0">Event location</p>
+                                </div>
+
+                                <!-- Date & Time -->
+                                <div class="info-item">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-calendar me-2"></i>Date & Time
+                                    </h6>
+                                    <p class="mb-0" th:text="${event.formattedEventDate}">Event date and time</p>
+                                </div>
+
+                                <!-- Registration Deadline -->
+                                <div th:if="${event.registrationDeadline != null}" class="info-item">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-clock me-2"></i>Registration Deadline
+                                    </h6>
+                                    <p class="mb-0" th:text="${event.formattedRegistrationDeadline}">Registration deadline</p>
+                                </div>
+
+                                <!-- Capacity -->
+                                <div class="info-item">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-users me-2"></i>Capacity
+                                    </h6>
+                                    <div class="d-flex align-items-center">
+                                        <span th:text="${event.capacityText}" class="me-3">Capacity info</span>
+                                        <div th:if="${event.hasCapacityLimit()}" class="progress flex-grow-1" style="height: 8px;">
+                                            <div class="progress-bar" 
+                                                 th:style="'width: ' + ${(event.registrationCount * 100.0 / event.capacity)} + '%'"
+                                                 th:classappend="${event.isFull()} ? 'bg-danger' : 'bg-success'">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Registration Section (placeholder for Phase 4.2) -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user-plus me-2"></i>Registration
+                                </h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div th:if="${event.canRegister()}" class="mb-3">
+                                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                    <h6 class="text-success">Registration Open</h6>
+                                    <p class="text-muted">You can register for this event.</p>
+                                </div>
+                                <div th:unless="${event.canRegister()}" class="mb-3">
+                                    <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                                    <h6 class="text-danger" th:text="${event.registrationStatusText}">Registration Status</h6>
+                                </div>
+                                <button class="btn btn-primary" disabled>
+                                    <i class="fas fa-user-plus me-2"></i>Register for Event
+                                    <small class="text-muted">(Coming in Phase 4.2)</small>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="col-lg-4">
+                        <!-- Event Status -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-info me-2"></i>Event Status
+                                </h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <span th:class="${event.statusBadgeClass} + ' fs-6'" th:text="${event.statusDisplayName}">Status</span>
+                                </div>
+                                <div th:if="${event.isPastEvent()}" class="text-muted">
+                                    <i class="fas fa-history me-1"></i>This event has ended
+                                </div>
+                                <div th:if="${event.isUpcoming()}" class="text-success">
+                                    <i class="fas fa-calendar-check me-1"></i>Upcoming event
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Club Information -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-building me-2"></i>Organized by
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <h6 th:text="${event.clubName}">Club Name</h6>
+                                <div class="d-grid">
+                                    <a th:href="@{/clubs/view/{id}(id=${event.clubId})}" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye me-2"></i>View Club
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Event Statistics -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-bar me-2"></i>Statistics
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-6 mb-3">
+                                        <div class="border-end">
+                                            <h4 class="text-primary mb-1" th:text="${event.registrationCount ?: 0}">0</h4>
+                                            <small class="text-muted">Registered</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <h4 class="text-info mb-1" th:text="${event.attendanceCount ?: 0}">0</h4>
+                                        <small class="text-muted">Attended</small>
+                                    </div>
+                                </div>
+                                <div th:if="${event.registrationCount != null and event.registrationCount > 0}" class="text-center">
+                                    <small class="text-muted">
+                                        Attendance Rate: <span th:text="${event.formattedAttendanceRate}">0%</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Admin Actions -->
+                        <div sec:authorize="hasRole('CLUB_ADMIN')" class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-cog me-2"></i>Admin Actions
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/events/{id}/edit(id=${event.id})}" 
+                                       th:if="${event.canEdit()}"
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-edit me-2"></i>Edit Event
+                                    </a>
+                                    
+                                    <form th:if="${event.status.name() == 'DRAFT'}" 
+                                          th:action="@{/events/{id}/publish(id=${event.id})}" 
+                                          method="post" 
+                                          class="d-grid">
+                                        <button type="submit" class="btn btn-success" 
+                                                onclick="return confirm('Publish this event?')">
+                                            <i class="fas fa-rocket me-2"></i>Publish Event
+                                        </button>
+                                    </form>
+                                    
+                                    <form th:if="${event.status.name() == 'PUBLISHED'}" 
+                                          th:action="@{/events/{id}/cancel(id=${event.id})}" 
+                                          method="post" 
+                                          class="d-grid">
+                                        <button type="submit" class="btn btn-warning" 
+                                                onclick="return confirm('Cancel this event?')">
+                                            <i class="fas fa-ban me-2"></i>Cancel Event
+                                        </button>
+                                    </form>
+                                    
+                                    <form th:if="${event.canDelete()}" 
+                                          th:action="@{/events/{id}/delete(id=${event.id})}" 
+                                          method="post" 
+                                          class="d-grid">
+                                        <button type="submit" class="btn btn-outline-danger" 
+                                                onclick="return confirm('Delete this event? This action cannot be undone.')">
+                                            <i class="fas fa-trash me-2"></i>Delete Event
+                                        </button>
+                                    </form>
+                                    
+                                    <hr>
+                                    <a th:href="@{/club-admin/events}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Events
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Navigation -->
+                        <div sec:authorize="!hasRole('CLUB_ADMIN')" class="card">
+                            <div class="card-body">
+                                <div class="d-grid">
+                                    <a th:href="@{/events}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Events
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

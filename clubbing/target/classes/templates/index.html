@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Management System - Connect, Engage, Grow</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .hero-section {
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,100 1000,0"/></svg>');
+            background-size: cover;
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .icon-user { background: var(--primary-gradient); }
+        .icon-club { background: var(--secondary-gradient); }
+        .icon-event { background: var(--success-gradient); }
+        .icon-forum { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .icon-member { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .icon-notify { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid white;
+            color: white;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 50px;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .stats-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 4rem 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .cta-section {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 4rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .hero-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .section-padding {
+            padding: 5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark position-absolute w-100" style="z-index: 1000;">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-users me-2"></i>
+                ClubHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/login}">Login</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-outline-primary" th:href="@{/register}">Get Started</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">
+                        Connect, Engage & Grow with <span style="color: #ffd700;">ClubHub</span>
+                    </h1>
+                    <p class="lead mb-4 opacity-90">
+                        The ultimate platform for student organizations to manage clubs, organize events, 
+                        engage members, and build thriving communities. Join thousands of students already 
+                        connected through ClubHub.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="/auth/login" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                        <a href="/auth/register" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="hero-animation">
+                        <i class="fas fa-users fa-10x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section-padding">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 class="display-5 fw-bold mb-3">Powerful Features for Every Role</h2>
+                    <p class="lead text-muted">Everything you need to manage and participate in student organizations</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon icon-user">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h4 class="mb-3">User Management</h4>
+                        <p class="text-muted">
+                            Secure registration, role-based access control, and comprehensive profile management. 
+                            Support for students, club admins, and system administrators.
+                        </p>
+                        <ul class="list-unstyled text-muted small">
+                            <li><i class="fas fa-check text-success me-2"></i>Role-based Authentication</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Profile Management</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Password Security</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon icon-club">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h4 class="mb-3">Club Management</h4>
+                        <p class="text-muted">
+                            Create and manage clubs with ease. Set up club details, assign administrators, 
+                            and maintain club information all in one place.
+                        </p>
+                        <ul class="list-unstyled text-muted small">
+                            <li><i class="fas fa-check text-success me-2"></i>Club Creation & Setup</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Admin Assignment</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Club Information Management</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon icon-member">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4 class="mb-3">Membership Management</h4>
+                        <p class="text-muted">
+                            Streamlined membership requests, approval workflows, and member management. 
+                            Students can easily join clubs and admins can manage memberships.
+                        </p>
+                        <ul class="list-unstyled text-muted small">
+                            <li><i class="fas fa-check text-success me-2"></i>Membership Requests</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Approval Workflows</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Member Directory</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon icon-event">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h4 class="mb-3">Event Management</h4>
+                        <p class="text-muted">
+                            Organize events, track attendance, and engage your community. From workshops 
+                            to social gatherings, manage all club activities efficiently.
+                        </p>
+                        <ul class="list-unstyled text-muted small">
+                            <li><i class="fas fa-check text-success me-2"></i>Event Creation</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Registration & RSVP</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Attendance Tracking</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon icon-forum">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h4 class="mb-3">Forum & Discussions</h4>
+                        <p class="text-muted">
+                            Foster community engagement with club-specific discussion boards. 
+                            Members can post, comment, and interact with moderation tools for admins.
+                        </p>
+                        <ul class="list-unstyled text-muted small">
+                            <li><i class="fas fa-check text-success me-2"></i>Discussion Boards</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Post & Comment System</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Moderation Tools</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon icon-notify">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h4 class="mb-3">Smart Notifications</h4>
+                        <p class="text-muted">
+                            Stay informed with intelligent notifications. Email alerts for membership requests, 
+                            in-app notifications for events, and announcements.
+                        </p>
+                        <ul class="list-unstyled text-muted small">
+                            <li><i class="fas fa-check text-success me-2"></i>Email Notifications</li>
+                            <li><i class="fas fa-check text-success me-2"></i>In-App Alerts</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Event Reminders</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number">500+</div>
+                        <h5>Active Students</h5>
+                        <p class="text-muted">Students actively using the platform</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number">50+</div>
+                        <h5>Student Clubs</h5>
+                        <p class="text-muted">Clubs organized and managed</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number">200+</div>
+                        <h5>Events Hosted</h5>
+                        <p class="text-muted">Successful events organized</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number">98%</div>
+                        <h5>Satisfaction Rate</h5>
+                        <p class="text-muted">Users love our platform</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section-padding">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="display-5 fw-bold mb-4">Built for Student Success</h2>
+                    <p class="lead mb-4">
+                        ClubHub is designed to bridge the gap between students and organizations, 
+                        making it easier than ever to discover, join, and actively participate in 
+                        campus life.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shield-alt text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Secure & Reliable</h6>
+                                    <small class="text-muted">Your data is safe with us</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-mobile-alt text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Mobile Friendly</h6>
+                                    <small class="text-muted">Access anywhere, anytime</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clock text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Real-time Updates</h6>
+                                    <small class="text-muted">Stay informed instantly</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-heart text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Community Focused</h6>
+                                    <small class="text-muted">Built for student life</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' fill='%23667eea'><rect width='400' height='300' rx='20'/><circle cx='100' cy='80' r='30' fill='white'/><circle cx='200' cy='80' r='30' fill='white'/><circle cx='300' cy='80' r='30' fill='white'/><rect x='50' y='140' width='300' height='10' rx='5' fill='white' opacity='0.7'/><rect x='50' y='170' width='200' height='10' rx='5' fill='white' opacity='0.5'/><rect x='50' y='200' width='250' height='10' rx='5' fill='white' opacity='0.7'/></svg>" 
+                         alt="Platform Illustration" class="img-fluid rounded shadow">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h2 class="display-5 fw-bold mb-4">Ready to Get Started?</h2>
+                    <p class="lead mb-4 opacity-90">
+                        Join thousands of students who are already connecting and growing through ClubHub. 
+                        Create your account today and discover amazing opportunities.
+                    </p>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a th:href="@{/register}" class="btn btn-light btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </a>
+                        <a th:href="@{/login}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-users me-2"></i>
+                        <span class="fw-bold">ClubHub</span>
+                        <span class="ms-2 text-muted">© 2024 Club Management System</span>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted">Built with ❤️ for student communities</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

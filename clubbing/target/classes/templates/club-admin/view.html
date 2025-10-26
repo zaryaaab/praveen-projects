@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Manage Club - ' + ${club.name}">Manage Club - Club Management System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%);
+        }
+        .club-logo-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+        }
+        .info-item {
+            border-bottom: 1px solid #eee;
+            padding: 1rem 0;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .admin-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5 class="text-white">
+                            <i class="fas fa-users me-2"></i>
+                            Club System
+                        </h5>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/dashboard}">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/profile}">
+                                <i class="fas fa-user me-2"></i>
+                                Profile
+                            </a>
+                        </li>
+                        
+                        <!-- Club Admin only -->
+                        <div sec:authorize="hasRole('CLUB_ADMIN')">
+                            <hr class="my-3" style="border-color: rgba(255,255,255,0.3);">
+                            <h6 class="sidebar-heading text-white-50 text-uppercase px-3 mb-2">
+                                <span>Club Management</span>
+                            </h6>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/club-admin/dashboard}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    My Clubs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/clubs}">
+                                    <i class="fas fa-search me-2"></i>
+                                    Browse Clubs
+                                </a>
+                            </li>
+                        </div>
+                    </ul>
+                    
+                    <!-- Logout -->
+                    <div class="mt-auto pt-3">
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light btn-sm w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Page header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fas fa-cog me-2"></i>
+                        Manage Club
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a th:href="@{/club-admin/clubs/edit/{id}(id=${club.id})}" class="btn btn-primary">
+                                <i class="fas fa-edit me-2"></i>
+                                Edit Club
+                            </a>
+                            <a th:href="@{/club-admin/dashboard}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success/Error Messages -->
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${successMessage}">Success message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span th:text="${errorMessage}">Error message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span th:text="${infoMessage}">Info message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Club Information -->
+                <div class="row">
+                    <!-- Club Header Card -->
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <!-- Club Logo -->
+                                        <div class="club-logo-large d-flex align-items-center justify-content-center position-relative">
+                                            <img th:if="${club.logoUrl != null and !#strings.isEmpty(club.logoUrl)}" 
+                                                 th:src="${club.logoUrl}" 
+                                                 th:alt="${club.name}" 
+                                                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 15px;"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="d-flex align-items-center justify-content-center text-muted w-100 h-100"
+                                                 style="font-size: 2.5rem; display: none;">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <div th:if="${club.logoUrl == null or #strings.isEmpty(club.logoUrl)}" 
+                                                 class="d-flex align-items-center justify-content-center text-muted w-100 h-100"
+                                                 style="font-size: 2.5rem;">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h1 class="display-6 mb-0 me-3" th:text="${club.name}">Club Name</h1>
+                                            <span class="admin-badge">
+                                                <i class="fas fa-user-tie me-1"></i>Admin View
+                                            </span>
+                                        </div>
+                                        <div class="mb-3">
+                                            <span class="badge bg-secondary me-2 fs-6" th:text="${club.category}">Category</span>
+                                            <span th:if="${club.active}" class="badge bg-success fs-6">
+                                                <i class="fas fa-check-circle me-1"></i>Active
+                                            </span>
+                                            <span th:unless="${club.active}" class="badge bg-warning fs-6">
+                                                <i class="fas fa-pause-circle me-1"></i>Inactive
+                                            </span>
+                                        </div>
+                                        <p class="lead mb-3" th:text="${club.description}">Club description goes here...</p>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-4">
+                                                <i class="fas fa-users me-2"></i>
+                                                <strong th:text="${club.memberCount}">0</strong> members
+                                            </span>
+                                            <span th:if="${club.establishmentDate != null}">
+                                                <i class="fas fa-calendar me-2"></i>
+                                                Est. <span th:text="${#temporals.format(club.establishmentDate, 'yyyy')}">2024</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="col-lg-8 mb-4">
+                        <!-- Club Information Panel -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Club Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Description -->
+                                <div class="info-item">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-align-left me-2"></i>Description
+                                    </h6>
+                                    <p th:text="${club.description}" class="mb-0">Club description goes here...</p>
+                                </div>
+
+                                <!-- Category -->
+                                <div class="info-item">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-folder me-2"></i>Category
+                                    </h6>
+                                    <span class="badge bg-secondary fs-6" th:text="${club.category}">Category</span>
+                                </div>
+
+                                <!-- Establishment Date -->
+                                <div class="info-item" th:if="${club.establishmentDate != null}">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-calendar me-2"></i>Establishment Date
+                                    </h6>
+                                    <p class="mb-0" th:text="${#temporals.format(club.establishmentDate, 'MMMM dd, yyyy')}">Date</p>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="info-item">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-toggle-on me-2"></i>Status
+                                    </h6>
+                                    <div class="d-flex align-items-center">
+                                        <span th:if="${club.active}" class="badge bg-success fs-6 me-2">
+                                            <i class="fas fa-check-circle me-1"></i>Active
+                                        </span>
+                                        <span th:unless="${club.active}" class="badge bg-warning fs-6 me-2">
+                                            <i class="fas fa-pause-circle me-1"></i>Inactive
+                                        </span>
+                                        <small class="text-muted">
+                                            <span th:if="${club.active}">Club is visible to students and accepting members</span>
+                                            <span th:unless="${club.active}">Club is hidden from public view</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Club Members Section -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>
+                                    Club Members
+                                </h5>
+                                <span class="badge bg-info" th:text="${membershipStats.activeMembers}">0</span>
+                            </div>
+                            <div class="card-body">
+                                <!-- Members Overview -->
+                                <div class="row text-center mb-4">
+                                    <div class="col-4">
+                                        <h4 class="text-primary mb-1" th:text="${membershipStats.activeMembers}">0</h4>
+                                        <small class="text-muted">Active Members</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h4 class="text-warning mb-1" th:text="${membershipStats.pendingRequests}">0</h4>
+                                        <small class="text-muted">Pending Requests</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h4 class="text-success mb-1" th:text="${membershipStats.leadershipCount}">0</h4>
+                                        <small class="text-muted">Leadership</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quick Actions -->
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <a th:href="@{/membership/club/{id}/members(id=${club.id})}" class="btn btn-primary">
+                                        <i class="fas fa-list me-2"></i>Manage Members
+                                    </a>
+                                    <a th:href="@{/membership/club/{id}/requests(id=${club.id})}" class="btn btn-outline-warning" th:if="${membershipStats.pendingRequests > 0}">
+                                        <i class="fas fa-user-clock me-2"></i>Review Requests
+                                        <span class="badge bg-warning text-dark ms-1" th:text="${membershipStats.pendingRequests}">0</span>
+                                    </a>
+                                </div>
+                                
+                                <div th:if="${membershipStats.activeMembers == 0}" class="text-center py-3">
+                                    <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">No members yet. Approved membership requests will appear here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="col-lg-4">
+                        <!-- Quick Actions -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-bolt me-2"></i>
+                                    Quick Actions
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/club-admin/clubs/edit/{id}(id=${club.id})}" class="btn btn-primary">
+                                        <i class="fas fa-edit me-2"></i>Edit Club Details
+                                    </a>
+                                    <a th:href="@{/clubs/view/{id}(id=${club.id})}" class="btn btn-outline-info">
+                                        <i class="fas fa-eye me-2"></i>View Public Page
+                                    </a>
+                                    <a th:href="@{/membership/club/{id}/members(id=${club.id})}" class="btn btn-outline-success">
+                                        <i class="fas fa-users me-2"></i>Manage Members
+                                    </a>
+                                    <a th:href="@{/membership/club/{id}/requests(id=${club.id})}" class="btn btn-outline-warning" th:if="${membershipStats.pendingRequests > 0}">
+                                        <i class="fas fa-user-clock me-2"></i>Review Requests
+                                        <span class="badge bg-warning text-dark ms-1" th:text="${membershipStats.pendingRequests}">0</span>
+                                    </a>
+                                    <a th:href="@{/events/create}" class="btn btn-success">
+                                        <i class="fas fa-calendar me-2"></i>Create Event
+                                    </a>
+                                    <a th:href="@{/club-admin/events}" class="btn btn-outline-primary">
+                                        <i class="fas fa-calendar-alt me-2"></i>Manage Events
+                                    </a>
+                                    <hr class="my-2">
+                                    <a th:href="@{/club-admin/dashboard}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Club Statistics -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    Club Statistics
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-6 mb-3">
+                                        <div class="border-end">
+                                            <h4 class="text-primary mb-1" th:text="${membershipStats.activeMembers}">0</h4>
+                                            <small class="text-muted">Members</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <h4 class="mb-1" th:classappend="${club.active ? 'text-success' : 'text-warning'}">
+                                            <span th:if="${club.active}">Active</span>
+                                            <span th:unless="${club.active}">Inactive</span>
+                                        </h4>
+                                        <small class="text-muted">Status</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="border-end">
+                                            <h4 class="text-info mb-1">0</h4>
+                                            <small class="text-muted">Events</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <h4 class="text-warning mb-1" th:text="${membershipStats.pendingRequests}">0</h4>
+                                        <small class="text-muted">Requests</small>
+                                    </div>
+                                </div>
+                                <small class="text-muted text-center d-block mt-2">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Event tracking coming in Phase 4
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Club Metadata -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-info me-2"></i>
+                                    Metadata
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="info-item">
+                                    <small class="text-muted">Club ID</small>
+                                    <p class="mb-0" th:text="${club.id}">1</p>
+                                </div>
+                                <div class="info-item">
+                                    <small class="text-muted">Created</small>
+                                    <p class="mb-0" th:text="${#temporals.format(club.createdAt, 'MMM dd, yyyy')}">Date</p>
+                                </div>
+                                <div class="info-item">
+                                    <small class="text-muted">Last Updated</small>
+                                    <p class="mb-0" th:text="${#temporals.format(club.updatedAt, 'MMM dd, yyyy')}">Date</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

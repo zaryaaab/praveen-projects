@@ -128,13 +128,6 @@ coverage/
 test-results/
 jest-html-reporters-*
 
-# --- Docker / Containers ---
-.dockerignore
-Dockerfile*
-docker-compose*.yml
-*.tar
-*.img
-
 # --- Misc Build Artifacts ---
 *.manifest
 *.spec

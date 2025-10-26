@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membership Requests - Club Management System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5 class="text-white">
+                            <i class="fas fa-users me-2"></i>
+                            Club System
+                        </h5>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/dashboard}">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/profile}">
+                                <i class="fas fa-user me-2"></i>
+                                Profile
+                            </a>
+                        </li>
+                        
+                        <!-- Club Admin only -->
+                        <div sec:authorize="hasRole('CLUB_ADMIN')">
+                            <hr class="my-3" style="border-color: rgba(255,255,255,0.3);">
+                            <h6 class="sidebar-heading text-white-50 text-uppercase px-3 mb-2">
+                                <span>Club Management</span>
+                            </h6>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/club-admin/dashboard}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    My Clubs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/clubs}">
+                                    <i class="fas fa-search me-2"></i>
+                                    Browse Clubs
+                                </a>
+                            </li>
+                        </div>
+                        
+                        <!-- System Admin only -->
+                        <div sec:authorize="hasRole('SYSTEM_ADMIN')">
+                            <hr class="my-3" style="border-color: rgba(255,255,255,0.3);">
+                            <h6 class="sidebar-heading text-white-50 text-uppercase px-3 mb-2">
+                                <span>Administration</span>
+                            </h6>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/users}">
+                                    <i class="fas fa-users-cog me-2"></i>
+                                    Manage Users
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/clubs}">
+                                    <i class="fas fa-building me-2"></i>
+                                    Manage Clubs
+                                </a>
+                            </li>
+                        </div>
+                    </ul>
+                    
+                    <!-- Logout -->
+                    <div class="mt-auto pt-3">
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light btn-sm w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Page header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Membership Requests
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a th:href="@{/membership/club/{id}/members(id=${clubId})}" class="btn btn-outline-primary">
+                                <i class="fas fa-users me-2"></i>
+                                View All Members
+                            </a>
+                            <a th:href="@{/club-admin/dashboard}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success/Error Messages -->
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${successMessage}">Success message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span th:text="${errorMessage}">Error message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Pending Requests -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clock me-2"></i>
+                            Pending Membership Requests
+                        </h5>
+                        <span class="badge bg-warning" th:text="${#lists.size(pendingRequests)}">0</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- No Requests Message -->
+                        <div th:if="${pendingRequests.empty}" class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No pending requests</h5>
+                            <p class="text-muted">
+                                There are currently no pending membership requests for this club.
+                                Students can submit requests by visiting the club page.
+                            </p>
+                            <a th:href="@{/membership/club/{id}/members(id=${clubId})}" class="btn btn-primary">
+                                <i class="fas fa-users me-2"></i>View Current Members
+                            </a>
+                        </div>
+
+                        <!-- Requests Table -->
+                        <div th:unless="${pendingRequests.empty}">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Message</th>
+                                            <th>Requested</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="request : ${pendingRequests}">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                         style="width: 40px; height: 40px;">
+                                                        <span class="text-white fw-bold" th:text="${#strings.substring(request.userName, 0, 1)}">A</span>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold" th:text="${request.userName}">Student Name</div>
+                                                        <small class="text-muted" th:text="${request.userEmail}">email@example.com</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div th:if="${request.message != null and !#strings.isEmpty(request.message)}">
+                                                    <p class="mb-0" th:text="${request.message}">Student's message</p>
+                                                </div>
+                                                <div th:if="${request.message == null or #strings.isEmpty(request.message)}">
+                                                    <em class="text-muted">No message provided</em>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span th:text="${#temporals.format(request.requestedAt, 'MMM dd, yyyy')}">Date</span>
+                                                <br>
+                                                <small class="text-muted" th:text="${#temporals.format(request.requestedAt, 'HH:mm')}">Time</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <form th:action="@{/membership/approve/{id}(id=${request.id})}" method="post" class="d-inline">
+                                                        <button type="submit" class="btn btn-success btn-sm" 
+                                                                onclick="return confirm('Approve this membership request?')"
+                                                                title="Approve Request">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-danger btn-sm" 
+                                                            data-bs-toggle="modal" 
+                                                            th:data-bs-target="'#rejectModal' + ${request.id}"
+                                                            title="Reject Request">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2 d-md-flex">
+                            <a th:href="@{/membership/club/{id}/members(id=${clubId})}" class="btn btn-outline-primary">
+                                <i class="fas fa-users me-2"></i>View All Members
+                            </a>
+                            <a th:href="@{/club-admin/dashboard}" class="btn btn-outline-secondary">
+                                <i class="fas fa-tachometer-alt me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Reject Modals -->
+    <div th:each="request : ${pendingRequests}">
+        <div class="modal fade" th:id="'rejectModal' + ${request.id}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Reject Membership Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form th:action="@{/membership/reject/{id}(id=${request.id})}" method="post">
+                        <div class="modal-body">
+                            <p>Are you sure you want to reject the membership request from <strong th:text="${request.userName}">Student</strong>?</p>
+                            <div class="mb-3">
+                                <label for="reason" class="form-label">Reason (optional)</label>
+                                <textarea class="form-control" name="reason" rows="3" 
+                                          placeholder="Provide a reason for rejection..."></textarea>
+                                <div class="form-text">
+                                    <small class="text-muted">This reason will be communicated to the student.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Reject Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Clubs Dashboard - Club Management System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .club-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+        }
+        .club-card {
+            height: 100%;
+        }
+        .club-card .card-body {
+            display: flex;
+            flex-direction: column;
+        }
+        .club-card .card-text {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5 class="text-white">
+                            <i class="fas fa-users me-2"></i>
+                            Club System
+                        </h5>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/dashboard}">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/profile}">
+                                <i class="fas fa-user me-2"></i>
+                                Profile
+                            </a>
+                        </li>
+                        
+                        <!-- Club Admin only -->
+                        <div sec:authorize="hasRole('CLUB_ADMIN')">
+                            <hr class="my-3" style="border-color: rgba(255,255,255,0.3);">
+                            <h6 class="sidebar-heading text-white-50 text-uppercase px-3 mb-2">
+                                <span>Club Management</span>
+                            </h6>
+                            <li class="nav-item">
+                                <a class="nav-link active" th:href="@{/club-admin/dashboard}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    My Clubs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/clubs}">
+                                    <i class="fas fa-search me-2"></i>
+                                    Browse Clubs
+                                </a>
+                            </li>
+                        </div>
+                    </ul>
+                    
+                    <!-- Logout -->
+                    <div class="mt-auto pt-3">
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light btn-sm w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Page header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fas fa-user-tie me-2"></i>
+                        My Clubs Dashboard
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <span class="text-muted me-3" th:text="${user.name}">User</span>
+                        <span class="badge bg-secondary" th:text="${user.role.displayName}">Role</span>
+                    </div>
+                </div>
+
+                <!-- Welcome Message -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="text-primary">
+                                    <i class="fas fa-hand-wave me-2"></i>
+                                    Welcome back, <span th:text="${user.name}">User</span>!
+                                </h4>
+                                <p class="text-muted mb-0">
+                                    Manage your clubs, track membership, and organize events. 
+                                    You are currently managing <strong th:text="${totalManagedClubs}">0</strong> club(s).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-primary" th:text="${totalManagedClubs}">0</h3>
+                                <p class="text-muted mb-0">Managed Clubs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-success" th:text="${activeClubs}">0</h3>
+                                <p class="text-muted mb-0">Active Clubs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-info" th:text="${totalMembers}">0</h3>
+                                <p class="text-muted mb-0">Total Members</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-warning" th:text="${totalPendingRequests}">0</h3>
+                                <p class="text-muted mb-0">Pending Requests</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Membership Requests -->
+                <div th:if="${!pendingRequests.empty}" class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clock me-2"></i>
+                            Pending Membership Requests
+                        </h5>
+                        <span class="badge bg-warning" th:text="${#lists.size(pendingRequests)}">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Club</th>
+                                        <th>Requested</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="request : ${#lists.size(pendingRequests) > 5 ? pendingRequests.subList(0, 5) : pendingRequests}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
+                                                     style="width: 35px; height: 35px;">
+                                                    <span class="text-white small fw-bold" th:text="${#strings.substring(request.userName, 0, 1)}">A</span>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold" th:text="${request.userName}">Student Name</div>
+                                                    <small class="text-muted" th:text="${request.userEmail}">email@example.com</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold" th:text="${request.clubName}">Club Name</span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${#temporals.format(request.requestedAt, 'MMM dd')}">Date</span>
+                                            <br>
+                                            <small class="text-muted" th:text="${#temporals.format(request.requestedAt, 'HH:mm')}">Time</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <form th:action="@{/membership/approve/{id}(id=${request.id})}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-success btn-sm" 
+                                                            onclick="return confirm('Approve this membership request?')">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                <a th:href="@{/membership/club/{id}/members(id=${request.clubId})}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div th:if="${#lists.size(pendingRequests) > 5}" class="text-center mt-3">
+                            <p class="text-muted">Showing 5 of <span th:text="${#lists.size(pendingRequests)}">0</span> pending requests</p>
+                            <a href="#" class="btn btn-outline-primary" onclick="showAllRequests()">View All Requests</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Clubs Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-building me-2"></i>
+                                    My Managed Clubs
+                                </h5>
+                                <a th:href="@{/clubs}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-search me-2"></i>Browse All Clubs
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <!-- No Clubs Message -->
+                                <div th:if="${managedClubs.empty}" class="text-center py-5">
+                                    <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No clubs assigned</h5>
+                                    <p class="text-muted">
+                                        You are not currently assigned as an administrator for any clubs.
+                                        Contact the system administrator to be assigned to clubs.
+                                    </p>
+                                    <a th:href="@{/clubs}" class="btn btn-primary">
+                                        <i class="fas fa-search me-2"></i>Browse Available Clubs
+                                    </a>
+                                </div>
+
+                                <!-- Clubs Grid -->
+                                <div th:unless="${managedClubs.empty}" class="row">
+                                    <div th:each="club : ${managedClubs}" class="col-md-6 col-lg-4 mb-4">
+                                        <div class="card club-card h-100">
+                                            <div class="card-body">
+                                                <!-- Club Header -->
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="club-logo d-flex align-items-center justify-content-center me-3 position-relative">
+                                                        <img th:if="${club.logoUrl != null and !#strings.isEmpty(club.logoUrl)}" 
+                                                             th:src="${club.logoUrl}" 
+                                                             th:alt="${club.name}" 
+                                                             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 10px;"
+                                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                        <div class="d-flex align-items-center justify-content-center text-muted w-100 h-100"
+                                                             style="font-size: 1.5rem; display: none;">
+                                                            <i class="fas fa-building"></i>
+                                                        </div>
+                                                        <div th:if="${club.logoUrl == null or #strings.isEmpty(club.logoUrl)}" 
+                                                             class="d-flex align-items-center justify-content-center text-muted w-100 h-100"
+                                                             style="font-size: 1.5rem;">
+                                                            <i class="fas fa-building"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h5 class="card-title mb-1" th:text="${club.name}">Club Name</h5>
+                                                        <div class="mb-2">
+                                                            <span class="badge bg-secondary me-1" th:text="${club.category}">Category</span>
+                                                            <span th:if="${club.active}" class="badge bg-success">Active</span>
+                                                            <span th:unless="${club.active}" class="badge bg-warning">Inactive</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Club Description -->
+                                                <p class="card-text text-muted small" th:text="${#strings.abbreviate(club.description, 100)}">
+                                                    Club description goes here...
+                                                </p>
+                                                
+                                                <!-- Club Stats -->
+                                                <div class="row text-center mb-3">
+                                                    <div class="col-6">
+                                                        <div class="border-end">
+                                                            <h6 class="text-primary mb-0" th:text="${club.memberCount}">0</h6>
+                                                            <small class="text-muted">Members</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <h6 class="mb-0" th:classappend="${club.active ? 'text-success' : 'text-warning'}">
+                                                            <span th:if="${club.active}">Active</span>
+                                                            <span th:unless="${club.active}">Inactive</span>
+                                                        </h6>
+                                                        <small class="text-muted">Status</small>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Club Actions -->
+                                                <div class="mt-auto">
+                                                    <div class="d-grid gap-2">
+                                                        <a th:href="@{/club-admin/clubs/view/{id}(id=${club.id})}" class="btn btn-primary btn-sm">
+                                                            <i class="fas fa-cog me-2"></i>Manage Club
+                                                        </a>
+                                                        <div class="btn-group" role="group">
+                                                            <a th:href="@{/club-admin/clubs/edit/{id}(id=${club.id})}" class="btn btn-outline-primary btn-sm">
+                                                                <i class="fas fa-edit me-1"></i>Edit
+                                                            </a>
+                                                            <a th:href="@{/membership/club/{id}/members(id=${club.id})}" class="btn btn-outline-info btn-sm">
+                                                                <i class="fas fa-users me-1"></i>Members
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/clubs}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Browse All Clubs
+                            </a>
+                            <a th:href="@{/clubs/view/{id}(id=${managedClubs[0].id})}" th:if="${!managedClubs.empty}" class="btn btn-outline-info">
+                                <i class="fas fa-eye me-2"></i>View My Club
+                            </a>
+                            <a th:href="@{/events/create}" class="btn btn-success">
+                                <i class="fas fa-calendar me-2"></i>Create Event
+                            </a>
+                            <a th:href="@{/club-admin/events}" class="btn btn-outline-primary">
+                                <i class="fas fa-calendar-alt me-2"></i>Manage Events
+                            </a>
+                            <a th:href="@{/profile}" class="btn btn-outline-secondary">
+                                <i class="fas fa-user me-2"></i>Edit Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips and Help -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-lightbulb me-2"></i>Tips for Club Admins</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="text-muted small mb-0">
+                            <li class="mb-2">Regularly review and respond to membership requests</li>
+                            <li class="mb-2">Keep your club information up to date</li>
+                            <li class="mb-2">Engage with your members through events and activities</li>
+                            <li class="mb-2">Assign leadership roles to active members</li>
+                            <li class="mb-2">Monitor club activity and member participation</li>
+                        </ul>
+                        <hr class="my-3">
+                        <p class="text-muted small mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>Note:</strong> Event management features will be available in Phase 4.
+                        </p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

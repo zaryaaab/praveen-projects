@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - ClubHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .event-card {
+            transition: transform 0.2s ease-in-out;
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .event-image {
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .event-date {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fas fa-calendar me-2"></i>Events
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div sec:authorize="hasRole('CLUB_ADMIN')" class="btn-group me-2">
+                            <a th:href="@{/events/create}" class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i>Create Event
+                            </a>
+                            <a th:href="@{/club-admin/events}" class="btn btn-outline-primary">
+                                <i class="fas fa-cog me-2"></i>Manage Events
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <form th:action="@{/events}" method="get">
+                            <div class="input-group">
+                                <input type="text" 
+                                       class="form-control" 
+                                       name="search" 
+                                       th:value="${searchTerm}"
+                                       placeholder="Search events by title, description, or club name...">
+                                <button class="btn btn-outline-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="text-muted">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            <span th:text="${#lists.size(events)}">0</span> events found
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events Highlight -->
+                <div th:if="${!upcomingEvents.empty}" class="row mb-4">
+                    <div class="col-12">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-star me-2"></i>Upcoming Events
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div th:each="event : ${#lists.size(upcomingEvents) > 3 ? upcomingEvents.subList(0, 3) : upcomingEvents}" class="col-md-4 mb-3">
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body">
+                                                <h6 class="card-title" th:text="${event.title}">Event Title</h6>
+                                                <p class="card-text small text-muted">
+                                                    <i class="fas fa-building me-1"></i><span th:text="${event.clubName}">Club</span><br>
+                                                    <i class="fas fa-calendar me-1"></i><span th:text="${event.formattedEventDate}">Date</span><br>
+                                                    <i class="fas fa-map-marker-alt me-1"></i><span th:text="${event.location}">Location</span>
+                                                </p>
+                                                <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-sm btn-primary">View Details</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Events Grid -->
+                <div th:if="${events.empty}" class="text-center py-5">
+                    <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No events found</h5>
+                    <p class="text-muted">
+                        <span th:if="${searchTerm != null}">
+                            No events match your search criteria. Try different keywords or 
+                            <a th:href="@{/events}" class="text-decoration-none">view all events</a>.
+                        </span>
+                        <span th:unless="${searchTerm != null}">
+                            There are no published events at the moment. Check back later for exciting events!
+                        </span>
+                    </p>
+                    <div sec:authorize="hasRole('CLUB_ADMIN')">
+                        <a th:href="@{/events/create}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create First Event
+                        </a>
+                    </div>
+                </div>
+
+                <div th:unless="${events.empty}" class="row">
+                    <div th:each="event : ${events}" class="col-lg-4 col-md-6 mb-4">
+                        <div class="card event-card h-100">
+                            <div class="position-relative">
+                                <!-- Event Image -->
+                                <div th:if="${event.imageUrl != null and !#strings.isEmpty(event.imageUrl)}" 
+                                     class="event-image"
+                                     th:style="'background-image: url(' + ${event.imageUrl} + '); background-size: cover; background-position: center;'">
+                                </div>
+                                <div th:unless="${event.imageUrl != null and !#strings.isEmpty(event.imageUrl)}" 
+                                     class="event-image d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-calendar fa-3x text-white"></i>
+                                </div>
+                                
+                                <!-- Event Date Badge -->
+                                <div class="event-date">
+                                    <div class="fw-bold text-primary" th:text="${event.formattedEventDateOnly}">Date</div>
+                                    <small class="text-muted" th:text="${event.formattedEventTime}">Time</small>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body d-flex flex-column">
+                                <!-- Event Title -->
+                                <h5 class="card-title" th:text="${event.title}">Event Title</h5>
+                                
+                                <!-- Event Info -->
+                                <div class="mb-3">
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-building me-1"></i>
+                                        <span th:text="${event.clubName}">Club Name</span>
+                                    </p>
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        <span th:text="${event.location}">Location</span>
+                                    </p>
+                                    <p class="text-muted small mb-0">
+                                        <i class="fas fa-users me-1"></i>
+                                        <span th:text="${event.capacityText}">Capacity</span>
+                                    </p>
+                                </div>
+                                
+                                <!-- Event Description -->
+                                <p class="card-text text-muted small" th:text="${#strings.abbreviate(event.description, 100)}">
+                                    Event description...
+                                </p>
+                                
+                                <!-- Event Status -->
+                                <div class="mb-3">
+                                    <span th:class="${event.statusBadgeClass}" th:text="${event.statusDisplayName}">Status</span>
+                                    <span th:if="${event.isFull()}" class="badge bg-warning ms-1">Full</span>
+                                    <span th:if="${event.isPastEvent()}" class="badge bg-secondary ms-1">Past Event</span>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="mt-auto">
+                                    <div class="d-grid">
+                                        <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-primary">
+                                            <i class="fas fa-eye me-2"></i>View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load More / Pagination (placeholder) -->
+                <div th:if="${#lists.size(events) > 12}" class="text-center mt-4">
+                    <button class="btn btn-outline-primary" disabled>
+                        <i class="fas fa-plus me-2"></i>Load More Events
+                        <small class="text-muted">(Pagination coming soon)</small>
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

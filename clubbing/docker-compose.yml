@@ -1,0 +1,27 @@
+services:
+  clubbing-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3700:3700"
+    volumes:
+      - ./data:/app/data 
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:h2:file:/app/data/clubbing
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SERVER_PORT=3700
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3700/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    container_name: clubbing-app
+
+volumes:
+  clubbing-data:
+    driver: local 

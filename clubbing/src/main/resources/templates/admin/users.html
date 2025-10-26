@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Club Management System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .stats-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            margin: 0.125rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <!-- Logo/Brand -->
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">
+                            <i class="fas fa-users-cog me-2"></i>
+                            ClubHub Admin
+                        </h4>
+                    </div>
+
+                    <!-- Navigation -->
+                    <ul class="nav flex-column">
+                        <!-- System Admin only -->
+                        <div sec:authorize="hasRole('SYSTEM_ADMIN')">
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/dashboard}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/clubs}">
+                                    <i class="fas fa-users me-2"></i>
+                                    Manage Clubs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" th:href="@{/admin/users}">
+                                    <i class="fas fa-user-cog me-2"></i>
+                                    Manage Users
+                                </a>
+                            </li>
+                        </div>
+
+                        <!-- Profile and Logout -->
+                        <hr class="my-3" style="border-color: rgba(255,255,255,0.3);">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/profile}">
+                                <i class="fas fa-user me-2"></i>
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <form th:action="@{/logout}" method="post" class="d-inline">
+                                <button type="submit" class="nav-link btn btn-link text-start w-100" style="color: rgba(255,255,255,0.8);">
+                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                    Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="pt-3 pb-2 mb-3">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center">
+                        <h1 class="h2">
+                            <i class="fas fa-user-cog me-2 text-primary"></i>
+                            User Management
+                        </h1>
+                        <div class="text-muted">
+                            Welcome, <span th:text="${currentUser.name}">Admin</span>
+                        </div>
+                    </div>
+
+                    <!-- Success/Error Messages -->
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span th:text="${successMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span th:text="${errorMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card text-center">
+                                <div class="card-body">
+                                    <h3 class="text-primary" th:text="${totalUsers}">0</h3>
+                                    <p class="text-muted mb-0">Total Users</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card text-center">
+                                <div class="card-body">
+                                    <h3 class="text-success" th:text="${activeUsers}">0</h3>
+                                    <p class="text-muted mb-0">Active Users</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card text-center">
+                                <div class="card-body">
+                                    <h3 class="text-warning" th:text="${clubAdmins}">0</h3>
+                                    <p class="text-muted mb-0">Club Admins</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card text-center">
+                                <div class="card-body">
+                                    <h3 class="text-info" th:text="${students}">0</h3>
+                                    <p class="text-muted mb-0">Students</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="table-container">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>
+                                All Users
+                            </h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Student ID</th>
+                                        <th>Department</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="user : ${users}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                                     style="width: 35px; height: 35px; font-size: 14px;">
+                                                    <span th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">U</span>
+                                                </div>
+                                                <span th:text="${user.name}">User Name</span>
+                                            </div>
+                                        </td>
+                                        <td th:text="${user.email}">user@example.com</td>
+                                        <td th:text="${user.studentId ?: 'N/A'}">STU001</td>
+                                        <td th:text="${user.department ?: 'N/A'}">Computer Science</td>
+                                        <td>
+                                            <span th:class="${user.roleBadgeClass}" th:text="${user.roleDisplayName}">Student</span>
+                                        </td>
+                                        <td>
+                                            <span th:class="${user.statusBadgeClass}" th:text="${user.statusText}">Active</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <!-- View Button -->
+                                                <a th:href="@{/admin/users/view/{id}(id=${user.id})}" 
+                                                   class="btn btn-outline-info btn-action" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                
+                                                <!-- Toggle Status Button -->
+                                                <form th:action="@{/admin/users/toggle-status/{id}(id=${user.id})}" method="post" class="d-inline">
+                                                    <button type="submit" 
+                                                            th:class="${user.active ? 'btn btn-outline-warning btn-action' : 'btn btn-outline-success btn-action'}"
+                                                            th:title="${user.active ? 'Deactivate User' : 'Activate User'}"
+                                                            th:disabled="${user.id == currentUser.id}">
+                                                        <i th:class="${user.active ? 'fas fa-user-slash' : 'fas fa-user-check'}"></i>
+                                                    </button>
+                                                </form>
+                                                
+                                                <!-- Role Update Dropdown -->
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-outline-secondary btn-action dropdown-toggle" 
+                                                            data-bs-toggle="dropdown" title="Change Role">
+                                                        <i class="fas fa-user-tag"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li th:each="role : ${userRoles}">
+                                                            <form th:action="@{/admin/users/update-role/{id}(id=${user.id})}" method="post">
+                                                                <input type="hidden" name="role" th:value="${role}">
+                                                                <button type="submit" class="dropdown-item" 
+                                                                        th:disabled="${user.role == role}"
+                                                                        th:text="${role.displayName}">Role</button>
+                                                            </form>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                
+                                                <!-- Delete Button -->
+                                                <button type="button" class="btn btn-outline-danger btn-action" 
+                                                        th:disabled="${user.id == currentUser.id}"
+                                                        data-bs-toggle="modal" 
+                                                        th:data-bs-target="'#deleteModal' + ${user.id}"
+                                                        title="Delete User">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modals -->
+    <div th:each="user : ${users}">
+        <div class="modal fade" th:id="'deleteModal' + ${user.id}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                            Confirm Delete
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete user <strong th:text="${user.name}">User</strong>?</p>
+                        <p class="text-muted">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form th:action="@{/admin/users/delete/{id}(id=${user.id})}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

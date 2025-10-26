@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event - ClubHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .form-card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+        }
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fas fa-calendar-plus me-2"></i>Create New Event
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/club-admin/events}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Events
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Success/Error Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${success}">Success message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span th:text="${error}">Error message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Create Event Form -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card form-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    Event Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/events/create}" th:object="${eventCreationDto}" method="post">
+                                    <div class="row">
+                                        <!-- Event Title -->
+                                        <div class="col-md-8 mb-3">
+                                            <label for="title" class="form-label required-field">
+                                                <i class="fas fa-heading me-2"></i>Event Title
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   th:class="${#fields.hasErrors('title')} ? 'form-control is-invalid' : 'form-control'"
+                                                   id="title" 
+                                                   th:field="*{title}" 
+                                                   placeholder="Enter event title"
+                                                   maxlength="200"
+                                                   required>
+                                            <div th:if="${#fields.hasErrors('title')}" class="invalid-feedback">
+                                                <span th:errors="*{title}">Title error</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Club Selection -->
+                                        <div class="col-md-4 mb-3">
+                                            <label for="clubId" class="form-label required-field">
+                                                <i class="fas fa-building me-2"></i>Club
+                                            </label>
+                                            <select class="form-select" 
+                                                    th:class="${#fields.hasErrors('clubId')} ? 'form-select is-invalid' : 'form-select'"
+                                                    id="clubId" 
+                                                    th:field="*{clubId}" 
+                                                    required>
+                                                <option value="">Select a club</option>
+                                                <option th:each="club : ${clubs}" 
+                                                        th:value="${club.id}" 
+                                                        th:text="${club.name}">Club Name</option>
+                                            </select>
+                                            <div th:if="${#fields.hasErrors('clubId')}" class="invalid-feedback">
+                                                <span th:errors="*{clubId}">Club error</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Event Description -->
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label required-field">
+                                            <i class="fas fa-align-left me-2"></i>Event Description
+                                        </label>
+                                        <textarea class="form-control" 
+                                                  th:class="${#fields.hasErrors('description')} ? 'form-control is-invalid' : 'form-control'"
+                                                  id="description" 
+                                                  th:field="*{description}" 
+                                                  rows="4" 
+                                                  placeholder="Describe your event in detail..."
+                                                  maxlength="2000"
+                                                  required></textarea>
+                                        <div th:if="${#fields.hasErrors('description')}" class="invalid-feedback">
+                                            <span th:errors="*{description}">Description error</span>
+                                        </div>
+                                        <div class="form-text">
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Provide a detailed description of your event (10-2000 characters)
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Event Date & Time -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="eventDate" class="form-label required-field">
+                                                <i class="fas fa-calendar-day me-2"></i>Event Date & Time
+                                            </label>
+                                            <input type="datetime-local" 
+                                                   class="form-control" 
+                                                   th:class="${#fields.hasErrors('eventDate')} ? 'form-control is-invalid' : 'form-control'"
+                                                   id="eventDate" 
+                                                   th:field="*{eventDate}" 
+                                                   required>
+                                            <div th:if="${#fields.hasErrors('eventDate')}" class="invalid-feedback">
+                                                <span th:errors="*{eventDate}">Event date error</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Location -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="location" class="form-label required-field">
+                                                <i class="fas fa-map-marker-alt me-2"></i>Location
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   th:class="${#fields.hasErrors('location')} ? 'form-control is-invalid' : 'form-control'"
+                                                   id="location" 
+                                                   th:field="*{location}" 
+                                                   placeholder="Event location"
+                                                   maxlength="255"
+                                                   required>
+                                            <div th:if="${#fields.hasErrors('location')}" class="invalid-feedback">
+                                                <span th:errors="*{location}">Location error</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Capacity -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="capacity" class="form-label">
+                                                <i class="fas fa-users me-2"></i>Capacity
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   th:class="${#fields.hasErrors('capacity')} ? 'form-control is-invalid' : 'form-control'"
+                                                   id="capacity" 
+                                                   th:field="*{capacity}" 
+                                                   placeholder="0 for unlimited"
+                                                   min="0"
+                                                   max="10000">
+                                            <div th:if="${#fields.hasErrors('capacity')}" class="invalid-feedback">
+                                                <span th:errors="*{capacity}">Capacity error</span>
+                                            </div>
+                                            <div class="form-text">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Leave empty or set to 0 for unlimited capacity
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                        <!-- Registration Deadline -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="registrationDeadline" class="form-label">
+                                                <i class="fas fa-clock me-2"></i>Registration Deadline
+                                            </label>
+                                            <input type="datetime-local" 
+                                                   class="form-control" 
+                                                   th:class="${#fields.hasErrors('registrationDeadline')} ? 'form-control is-invalid' : 'form-control'"
+                                                   id="registrationDeadline" 
+                                                   th:field="*{registrationDeadline}">
+                                            <div th:if="${#fields.hasErrors('registrationDeadline')}" class="invalid-feedback">
+                                                <span th:errors="*{registrationDeadline}">Registration deadline error</span>
+                                            </div>
+                                            <div class="form-text">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Optional: Set a deadline for registrations
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Image URL -->
+                                    <div class="mb-3">
+                                        <label for="imageUrl" class="form-label">
+                                            <i class="fas fa-image me-2"></i>Event Image URL
+                                        </label>
+                                        <input type="url" 
+                                               class="form-control" 
+                                               th:class="${#fields.hasErrors('imageUrl')} ? 'form-control is-invalid' : 'form-control'"
+                                               id="imageUrl" 
+                                               th:field="*{imageUrl}" 
+                                               placeholder="https://example.com/image.jpg"
+                                               maxlength="500">
+                                        <div th:if="${#fields.hasErrors('imageUrl')}" class="invalid-feedback">
+                                            <span th:errors="*{imageUrl}">Image URL error</span>
+                                        </div>
+                                        <div class="form-text">
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Optional: Add an image to make your event more attractive
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Publish Immediately -->
+                                    <div class="mb-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   id="publishImmediately" 
+                                                   th:field="*{publishImmediately}">
+                                            <label class="form-check-label" for="publishImmediately">
+                                                <i class="fas fa-rocket me-2"></i>
+                                                <strong>Publish immediately</strong>
+                                            </label>
+                                        </div>
+                                        <div class="form-text">
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                If unchecked, the event will be saved as a draft and you can publish it later
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Form Actions -->
+                                    <div class="d-flex justify-content-between">
+                                        <a th:href="@{/club-admin/events}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-save me-2"></i>Create Event
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Form Enhancement Script -->
+    <script>
+        // Set minimum date to today
+        document.addEventListener('DOMContentLoaded', function() {
+            const eventDateInput = document.getElementById('eventDate');
+            const registrationDeadlineInput = document.getElementById('registrationDeadline');
+            
+            // Set minimum date to current date and time
+            const now = new Date();
+            const minDateTime = now.toISOString().slice(0, 16);
+            eventDateInput.min = minDateTime;
+            registrationDeadlineInput.min = minDateTime;
+            
+            // Update registration deadline max when event date changes
+            eventDateInput.addEventListener('change', function() {
+                if (this.value) {
+                    registrationDeadlineInput.max = this.value;
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
