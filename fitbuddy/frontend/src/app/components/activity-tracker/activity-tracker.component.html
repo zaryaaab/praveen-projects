@@ -1,0 +1,83 @@
+<div class="activity-container">
+  <div class="activity-header">
+    <h2>Activity Tracking</h2>
+    <div style="display: flex; gap: 12px;">
+      <button mat-stroked-button>
+        <mat-icon>calendar_today</mat-icon>
+        This Week
+      </button>
+      <button mat-raised-button color="primary" (click)="openActivityDialog()">
+        <mat-icon>add</mat-icon>
+        Add Activity
+      </button>
+    </div>
+  </div>
+  
+  <mat-tab-group [selectedIndex]="activeTab === 'steps' ? 0 : activeTab === 'workouts' ? 1 : 2" 
+                (selectedIndexChange)="setActiveTab($event === 0 ? 'steps' : $event === 1 ? 'workouts' : 'sleep')">
+    <mat-tab label="Steps">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Daily Steps</mat-card-title>
+          <mat-card-subtitle>Your step count history</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div class="bar-chart">
+              <div *ngFor="let steps of stepsData; let i = index" class="bar-column">
+                <div class="bar" [style.height]="getStepBarHeight(steps)">
+                  <span class="bar-value">{{steps}}</span>
+                </div>
+                <span class="bar-label">{{dateLabels[i]}}</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+    
+    <mat-tab label="Workouts">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Workout Minutes</mat-card-title>
+          <mat-card-subtitle>Your workout duration history</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div class="bar-chart">
+              <div *ngFor="let minutes of workoutMinutesData; let i = index" class="bar-column">
+                <div class="bar workout-bar" [style.height]="getWorkoutBarHeight(minutes)">
+                  <span class="bar-value">{{minutes}} min</span>
+                </div>
+                <span class="bar-label">{{dateLabels[i]}}</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+    
+    <mat-tab label="Sleep">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Sleep Tracking</mat-card-title>
+          <mat-card-subtitle>Your sleep duration history</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div class="bar-chart">
+              <div *ngFor="let hours of sleepData; let i = index" class="bar-column">
+                <div class="bar sleep-bar" [style.height]="getSleepBarHeight(hours)">
+                  <span class="bar-value">{{hours}}h</span>
+                </div>
+                <span class="bar-label">{{dateLabels[i]}}</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+

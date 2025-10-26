@@ -1,0 +1,98 @@
+<div class="workouts-container">
+  <div class="workouts-header">
+    <h2>Workout & Diet Plans</h2>
+    <div class="header-actions">
+
+      <button mat-raised-button color="primary" (click)="openDietPlanDialog()">
+        <mat-icon>add</mat-icon>
+        Create Plan
+      </button>
+    </div>
+  </div>
+  
+  <mat-tab-group [selectedIndex]="activeTab === 'recommended' ? 0 : activeTab === 'my-plans' ? 1 : 2" 
+                (selectedIndexChange)="setActiveTab($event === 0 ? 'recommended' : $event === 1 ? 'my-plans' : 'diet')">
+    <mat-tab label="Recommended">
+      <div class="workout-grid">
+        <mat-card *ngFor="let workout of recommendedWorkouts" class="workout-card">
+          <mat-card-header>
+            <div class="card-badges">
+              <span class="category-badge">{{workout.type}}</span>
+              <span class="level-badge">{{workout.duration}} min</span>
+            </div>
+            <mat-card-title>{{workout.name}}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="exercise-list">
+              <div *ngFor="let exercise of workout.exercises" class="exercise-item">
+                <span class="exercise-name" style="font-weight: bold;">{{exercise.name}}: </span>
+                <span class="exercise-details">{{exercise.sets}} sets × {{exercise.reps}} reps</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+    
+    <mat-tab label="My Plans">
+      <div class="workout-grid">
+        <mat-card *ngFor="let plan of myPlans" class="workout-card">
+          <mat-card-header>
+            <mat-card-title>{{plan.name}}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="nutrition-grid">
+              <div class="nutrition-item">
+                <span class="nutrition-label" style="font-weight: bold;">Calories: </span>
+                <span class="nutrition-value">{{plan.calories}}</span>
+              </div>
+              <div class="nutrition-item">
+                <span class="nutrition-label" style="font-weight: bold;">Protein: </span>
+                <span class="nutrition-value">{{plan.protein}}g</span>
+              </div>
+              <div class="nutrition-item">
+                <span class="nutrition-label" style="font-weight: bold;">Carbs: </span>
+                <span class="nutrition-value">{{plan.carbs}}g</span>
+              </div>
+              <div class="nutrition-item">
+                <span class="nutrition-label" style="font-weight: bold;">Fat: </span>
+                <span class="nutrition-value">{{plan.fat}}g</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+    
+    <mat-tab label="Diet Plans">
+      <div class="workout-grid">
+        <mat-card *ngFor="let diet of dietPlans" class="workout-card">
+          <mat-card-header>
+            <mat-card-title>{{diet.name}}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="nutrition-grid">
+              <div class="nutrition-item">
+                <span class="nutrition-label" style="font-weight: bold;">Calories: </span>
+                <span class="nutrition-value">{{diet.calories}}</span>
+              </div>
+              <div class="nutrition-item">
+                <span class="nutrition-label" style="font-weight: bold;">Protein: </span>
+                <span class="nutrition-value">{{diet.protein}}g</span>
+              </div>
+              <div class="nutrition-item">
+                <span class="nutrition-label" style="font-weight: bold;">Carbs: </span>
+                <span class="nutrition-value">{{diet.carbs}}g</span>
+              </div>
+              <div class="nutrition-item">
+                <span class="nutrition-label" style="font-weight: bold;">Fat: </span>
+                <span class="nutrition-value">{{diet.fat}}g</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+

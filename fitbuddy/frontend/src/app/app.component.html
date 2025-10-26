@@ -1,0 +1,21 @@
+<div class="app-container">
+    <ng-container *ngIf="!isLoginPage(); else authPages">
+      <mat-sidenav-container class="sidenav-container">
+        <mat-sidenav #sidenav mode="side" opened class="sidenav">
+          <app-sidenav></app-sidenav>
+        </mat-sidenav>
+        
+        <mat-sidenav-content>
+          <div class="content-container">
+            <router-outlet></router-outlet>
+          </div>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    </ng-container>
+    
+    <ng-template #authPages>
+      <router-outlet></router-outlet>
+    </ng-template>
+  </div>
+  
+  

@@ -1,0 +1,129 @@
+.activity-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  button {
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+.chart-container {
+  height: 300px;
+  margin-bottom: 24px;
+}
+
+.bar-chart {
+  display: flex;
+  height: 250px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  
+  .bar-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    
+    .bar {
+      width: 100%;
+      background-color: #f44336;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease;
+    }
+    
+    .sleep-bar {
+      background-color: #673ab7;
+      opacity: 0.7;
+    }
+    
+    .bar-label {
+      margin-top: 8px;
+      font-size: 12px;
+    }
+  }
+}
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    background-color: #f5f5f5;
+    padding: 12px;
+    
+    .stat-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      
+      mat-icon {
+        color: #f44336;
+      }
+      
+      span {
+        font-size: 14px;
+        font-weight: 500;
+      }
+    }
+    
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+}
+
+.workouts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  .workout-item {
+    padding: 16px;
+    
+    .workout-details {
+      display: flex;
+      justify-content: space-between;
+      
+      h3 {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 4px 0;
+      }
+      
+      p {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.6);
+        margin: 0;
+      }
+      
+      .workout-stats {
+        text-align: right;
+      }
+    }
+  }
+}
+

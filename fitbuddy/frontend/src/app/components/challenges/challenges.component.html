@@ -1,0 +1,85 @@
+<div class="challenges-container">
+  <div class="challenges-header">
+    <h2>Challenges & Leaderboards</h2>
+  </div>
+  
+  <div class="challenges-content">
+    <div class="challenges-section">
+      <h3>Active Challenges</h3>
+      
+      <div class="challenges-list">
+        <mat-card *ngFor="let challenge of activeChallenges" class="challenge-card">
+          <mat-card-header>
+            <div class="card-badges">
+              <span class="category-badge">{{challenge.category}}</span>
+              <span class="days-badge">{{challenge.daysLeft}} days left</span>
+            </div>
+            <mat-card-title>{{challenge.title}}</mat-card-title>
+            <mat-card-subtitle>{{challenge.description}}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="participants">
+              <mat-icon>people</mat-icon>
+              <span>{{challenge.participants}} participants</span>
+            </div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-stroked-button class="full-width-button" (click)="joinChallenge(challenge)">
+              Join Challenge
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+    
+    <div class="leaderboard-section">
+      <h3>Leaderboards</h3>
+      
+      <mat-card>
+        <mat-card-header>
+          <div class="leaderboard-title">
+            <mat-icon class="trophy-icon">emoji_events</mat-icon>
+            <mat-card-title>10,000 Steps Challenge</mat-card-title>
+          </div>
+          <mat-card-subtitle>Top performers this week</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="leaderboard-list">
+            <div *ngFor="let user of leaderboardUsers" class="leaderboard-item">
+              <div class="user-info">
+                <div class="position">{{user.position}}</div>
+                <!-- Removed avatar image here -->
+                <div class="name">{{user.name}}</div>
+              </div>
+              <div class="score">{{user.score}}</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      
+      <mat-card class="achievements-card">
+        <mat-card-header>
+          <div class="achievements-title">
+            <mat-icon class="award-icon">military_tech</mat-icon>
+            <mat-card-title>Your Achievements</mat-card-title>
+          </div>
+          <mat-card-subtitle>Badges and rewards you've earned</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="achievements-grid">
+            <div *ngFor="let badge of achievements" 
+                 class="achievement-item"
+                 [class.unlocked]="badge.unlocked">
+              <div class="badge-icon">
+                <mat-icon>military_tech</mat-icon>
+              </div>
+              <div class="badge-name">{{badge.name}}</div>
+              <div class="badge-description">{{badge.description}}</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
+

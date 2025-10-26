@@ -1,0 +1,30 @@
+<div class="profile-container">
+  <header class="profile-header">
+    <h1>Profile Settings</h1>
+    <p>Manage your account and fitness preferences</p>
+  </header>
+</div>
+
+<div class="profile-card">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>User Profile</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="profile-info">
+        <p><strong>Name:</strong> {{ personalInfoForm.get('name')?.value }}</p>
+        <p><strong>Email:</strong> {{ personalInfoForm.get('email')?.value }}</p>
+        <p><strong>College:</strong> {{ personalInfoForm.get('college')?.value }}</p>
+        <p><strong>Goal:</strong> {{ personalInfoForm.get('goal')?.value }}</p>
+        <p><strong>Weight:</strong> {{ personalInfoForm.get('weight')?.value }} kg</p>
+        <p><strong>Height:</strong> {{ personalInfoForm.get('height')?.value }} cm</p>
+        <div class="bmi-calculator">
+          <div *ngIf="bmi !== null">
+            <p><strong>BMI:</strong> {{ bmi }}</p>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+

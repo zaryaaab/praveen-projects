@@ -1,0 +1,52 @@
+.sidenav-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.logo-icon {
+  color: #f44336;
+  margin-right: 8px;
+  font-size: 28px;
+  height: 28px;
+  width: 28px;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+mat-nav-list {
+  a {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    
+    mat-icon {
+      margin-right: 12px;
+    }
+    
+    &.active {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+      
+      mat-icon {
+        color: #f44336;
+      }
+    }
+  }
+}
+
+mat-divider {
+  margin: 8px 0;
+}
+
