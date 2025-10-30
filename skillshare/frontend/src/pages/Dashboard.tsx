@@ -4,7 +4,6 @@ import {
   Users, 
   FileText, 
   UserCheck, 
-  Star, 
   Calendar, 
   TrendingUp,
   BookOpen,
@@ -22,11 +21,10 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { studyGroups, resources, mentorSessions, notifications } = useApp();
 
-  // Sample data for dashboard metrics
   const stats = [
     {
       label: 'Study Groups',
-      value: user?.studyGroups.length || 0,
+      value: studyGroups.length || 0,
       icon: Users,
       color: 'text-primary-600',
       bgColor: 'bg-primary-100',
@@ -42,7 +40,7 @@ const Dashboard: React.FC = () => {
     },
     {
       label: 'Mentor Sessions',
-      value: user?.mentorshipSessions || 0,
+      value: mentorSessions.length || 0,
       icon: UserCheck,
       color: 'text-accent-600',
       bgColor: 'bg-accent-100',
@@ -69,7 +67,6 @@ const Dashboard: React.FC = () => {
     .slice(0, 3);
 
   const suggestedGroups = studyGroups
-    .filter(group => !user?.studyGroups.includes(group.id))
     .slice(0, 3);
 
   return (
@@ -92,24 +89,18 @@ const Dashboard: React.FC = () => {
                 Mentor
               </Badge>
             )}
-            {user?.rating && (
-              <div className="flex items-center space-x-1 bg-white/20 rounded-full px-3 py-1">
-                <Star className="w-4 h-4 text-yellow-300 fill-current" />
-                <span className="font-semibold">{user.rating}</span>
-              </div>
-            )}
+
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
+        {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <Link key={stat.label} to={stat.link}>
-              <Card hover className="text-center animate-fade-in" 
-                    style={{ animationDelay: `${index * 0.1}s` }}>
+              <Card hover className="text-center animate-fade-in">
                 <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center mx-auto mb-3`}>
                   <Icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
@@ -232,18 +223,11 @@ const Dashboard: React.FC = () => {
         
         <div className="grid md:grid-cols-3 gap-6">
           {suggestedGroups.map((group) => (
-            <div key={group.id} className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors">
-              {group.image && (
-                <img 
-                  src={group.image} 
-                  alt={group.name}
-                  className="w-full h-32 object-cover rounded-lg mb-3"
-                />
-              )}
-              <h3 className="font-medium text-gray-900 mb-2">{group.name}</h3>
+            <div key={group._id} className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors">
+              <h3 className="font-medium text-gray-900 mb-2">{group.group_name}</h3>
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">{group.description}</p>
               <div className="flex items-center justify-between">
-                <Badge variant="gray" size="sm">{group.subject}</Badge>
+                <Badge variant="gray" size="sm">{group.category}</Badge>
                 <Button size="sm" variant="outline">
                   Join
                 </Button>

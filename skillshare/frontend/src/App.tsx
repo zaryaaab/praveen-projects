@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { AppProvider } from './contexts/AppContext';
 import Layout from './components/Layout/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Auth/Login';
@@ -16,7 +17,8 @@ const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
+        <AppProvider>
+          <Routes>
           {/* Public routes */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
@@ -76,7 +78,8 @@ const App: React.FC = () => {
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          </Routes>
+        </AppProvider>
       </AuthProvider>
     </Router>
   );

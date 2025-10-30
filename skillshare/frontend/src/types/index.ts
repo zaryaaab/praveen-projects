@@ -3,8 +3,12 @@ export interface User {
   email: string;
   name: string;
   skills: string[];
-  created_at: string;
-  updated_at: string;
+  interests: string[];
+  joinedAt: Date;
+  isMentor: boolean;
+  studyGroups: string[];
+  mentorshipSessions: number;
+  avatar?: string;
 }
 
 export interface StudyGroup {
@@ -31,6 +35,7 @@ export interface AuthContextType {
   register: (name: string, email: string, password: string, skills: string[]) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 export interface ForumPost {
