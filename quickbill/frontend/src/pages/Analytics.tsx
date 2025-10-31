@@ -36,13 +36,34 @@ interface AnalyticsData {
   weekly_spending: SpendingTrend[];
   total_expenses: number;
   total_amount: number;
-  recent_expenses: any[];
+  recent_expenses: {
+    id: number;
+    title: string;
+    amount: string;
+    created_by: number;
+    created_by_username: string;
+    created_at: string;
+    split_type: string;
+    category: string;
+    description: string;
+    notes: string;
+    receipt: string | null;
+    is_settled: boolean;
+    shares: {
+      id: number;
+      user: number;
+      username: string;
+      amount: string;
+      is_paid: boolean;
+      paid_at: string | null;
+    }[];
+  }[];
 }
 
 interface BudgetData {
   monthly_average: number;
   suggestions: BudgetSuggestion[];
-  category_breakdown: any[];
+  category_breakdown: unknown[];
 }
 
 export function Analytics() {
@@ -53,12 +74,16 @@ export function Analytics() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [analyticsData, budgetSuggestions] = await Promise.all([
-          getExpenseAnalytics(),
-          getBudgetSuggestions()
-        ]);
-        setAnalytics(analyticsData);
-        setBudgetData(budgetSuggestions);
+        // Fetch analytics first so page can render even if suggestions fail.
+        const analyticsData = await getExpenseAnalytics();
+        setAnalytics(analyticsData as unknown as AnalyticsData);
+
+        try {
+          const budgetSuggestions = await getBudgetSuggestions();
+          setBudgetData(budgetSuggestions as unknown as BudgetData);
+        } catch (e) {
+          console.warn('Budget suggestions unavailable:', e);
+        }
       } catch (error) {
         console.error('Error fetching analytics:', error);
       } finally {
@@ -127,7 +152,7 @@ export function Analytics() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Total Amount</p>
-              <p className="text-2xl font-bold text-gray-900">${analytics?.total_amount || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">${Number(analytics?.total_amount ?? 0).toFixed(2)}</p>
             </div>
             <DollarSign className="h-8 w-8 text-green-600" />
           </div>
@@ -137,7 +162,7 @@ export function Analytics() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Monthly Average</p>
-              <p className="text-2xl font-bold text-gray-900">${budgetData?.monthly_average?.toFixed(2) || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">${Number(budgetData?.monthly_average ?? 0).toFixed(2)}</p>
             </div>
             <Calendar className="h-8 w-8 text-blue-600" />
           </div>
@@ -174,7 +199,7 @@ export function Analytics() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-semibold text-gray-900">
-                    ${category.total_amount}
+                    ${Number(category.total_amount).toFixed(2)}
                   </div>
                   <div className="text-xs text-gray-500">
                     {category.count} expenses
@@ -216,14 +241,39 @@ export function Analytics() {
             <div key={index} className="text-center">
               <div className="bg-indigo-100 rounded-lg p-4 mb-2">
                 <div className="text-lg font-semibold text-indigo-900">
-                  ${month.total_amount}
+                  ${Number(month.total_amount).toFixed(2)}
                 </div>
                 <div className="text-xs text-indigo-600">
                   {month.count} expenses
                 </div>
               </div>
               <div className="text-xs text-gray-500">
-                {new Date(month.month || '').toLocaleDateString('en-US', { month: 'short' })}
+                {month.month ? new Date(month.month).toLocaleDateString('en-US', { month: 'short' }) : ''}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Weekly Spending Trend */}
+      <div className="mt-8 bg-white rounded-xl shadow-sm p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <BarChart3 className="h-5 w-5" />
+          Weekly Spending Trend
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+          {analytics?.weekly_spending?.map((week, index) => (
+            <div key={index} className="text-center">
+              <div className="bg-green-100 rounded-lg p-4 mb-2">
+                <div className="text-lg font-semibold text-green-900">
+                  ${Number(week.total_amount).toFixed(2)}
+                </div>
+                <div className="text-xs text-green-700">
+                  {week.count} expenses
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                {week.week ? new Date(week.week).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) : ''}
               </div>
             </div>
           ))}
@@ -243,7 +293,7 @@ export function Analytics() {
                 </div>
               </div>
               <div className="text-lg font-semibold text-gray-900">
-                ${expense.amount}
+                ${Number(expense.amount).toFixed(2)}
               </div>
             </div>
           ))}
