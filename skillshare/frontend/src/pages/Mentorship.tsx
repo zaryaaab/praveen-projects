@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -15,6 +15,7 @@ import Button from '../components/UI/Button';
 import Input from '../components/UI/Input';
 import Badge from '../components/UI/Badge';
 import Modal from '../components/UI/Modal';
+import { getMyMentorships } from '../services/mentorship';
 
 const Mentorship: React.FC = () => {
   const { mentorSessions, scheduleMentorSession } = useApp();
@@ -30,6 +31,11 @@ const Mentorship: React.FC = () => {
     duration: 60,
     message: '',
   });
+
+  // Mentorship requests state
+  const [requests, setRequests] = useState<any[]>([]);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [requestsError, setRequestsError] = useState<string | null>(null);
 
   // Mock mentors data
   const mentors = [
@@ -106,6 +112,25 @@ const Mentorship: React.FC = () => {
     setSelectedMentor(mentor);
     setIsScheduleModalOpen(true);
   };
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      setIsLoadingRequests(true);
+      setRequestsError(null);
+      try {
+        const data = await getMyMentorships();
+        setRequests(Array.isArray(data) ? data : []);
+      } catch (err: any) {
+        setRequestsError(err?.message || 'Failed to load requests');
+      } finally {
+        setIsLoadingRequests(false);
+      }
+    };
+
+    if (activeTab === 'requests') {
+      fetchRequests();
+    }
+  }, [activeTab]);
 
   return (
     <div className="space-y-6">
@@ -365,13 +390,60 @@ const Mentorship: React.FC = () => {
       )}
 
       {activeTab === 'requests' && (
-        <Card>
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Session Requests</h2>
-          <div className="text-center py-8 text-gray-500">
-            <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p>No pending requests</p>
-          </div>
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <MessageCircle className="w-5 h-5 mr-2 text-primary-600" />
+              My Mentorship Requests
+            </h2>
+
+            {isLoadingRequests && (
+              <div className="text-center py-6 text-gray-500">Loading requests...</div>
+            )}
+
+            {requestsError && (
+              <div className="text-center py-6 text-red-600">{requestsError}</div>
+            )}
+
+            {!isLoadingRequests && !requestsError && (
+              requests.length > 0 ? (
+                <div className="space-y-4">
+                  {requests.map((req) => (
+                    <div key={req._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium text-gray-900">{req.skill_area}</h3>
+                        <Badge variant={req.status === 'pending' ? 'warning' : req.status === 'active' ? 'success' : req.status === 'completed' ? 'primary' : 'error'}>
+                          {req.status}
+                        </Badge>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-3">{req.program_description}</p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-700">
+                        <div className="flex items-center">
+                          <UserCheck className="w-4 h-4 mr-2 text-gray-500" />
+                          Mentor: {req.mentor_id?.name || 'Unknown'} ({req.mentor_id?.email || 'N/A'})
+                        </div>
+                        <div className="flex items-center">
+                          <UserCheck className="w-4 h-4 mr-2 text-gray-500" />
+                          Mentee: {req.mentee_id?.name || 'Unknown'} ({req.mentee_id?.email || 'N/A'})
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                          {new Date(req.start_date).toLocaleDateString()} → {new Date(req.end_date).toLocaleDateString()} ({req.duration_weeks}w)
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No requests found</p>
+                </div>
+              )
+            )}
+          </Card>
+        </div>
       )}
 
       {/* Schedule Session Modal */}

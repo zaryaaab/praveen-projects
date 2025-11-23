@@ -20,7 +20,7 @@ import Input from '../components/UI/Input';
 import Badge from '../components/UI/Badge';
 
 const Profile: React.FC = () => {
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     name: user?.name || '',
@@ -32,7 +32,6 @@ const Profile: React.FC = () => {
   const [newInterest, setNewInterest] = useState('');
 
   const handleSave = () => {
-    updateProfile(editData);
     setIsEditing(false);
   };
 
@@ -83,7 +82,7 @@ const Profile: React.FC = () => {
   const stats = [
     {
       label: 'Study Groups',
-      value: user?.studyGroups.length || 0,
+      value: user?.studyGroups?.length || 0,
       icon: Users,
       color: 'text-primary-600',
     },
@@ -226,7 +225,7 @@ const Profile: React.FC = () => {
             )}
             
             <div className="flex flex-wrap gap-2">
-              {(isEditing ? editData.skills : user.skills).map((skill) => (
+              {(isEditing ? editData.skills : user.skills || []).map((skill) => (
                 <Badge key={skill} variant="primary" className="flex items-center space-x-1">
                   <span>{skill}</span>
                   {isEditing && (
@@ -266,7 +265,7 @@ const Profile: React.FC = () => {
             )}
             
             <div className="flex flex-wrap gap-2">
-              {(isEditing ? editData.interests : user.interests).map((interest) => (
+              {(isEditing ? editData.interests : user.interests || []).map((interest) => (
                 <Badge key={interest} variant="secondary" className="flex items-center space-x-1">
                   <span>{interest}</span>
                   {isEditing && (
@@ -280,7 +279,7 @@ const Profile: React.FC = () => {
                   )}
                 </Badge>
               ))}
-              {(isEditing ? editData.interests : user.interests).length === 0 && (
+              {(isEditing ? editData.interests : user.interests || []).length === 0 && (
                 <p className="text-gray-500 text-sm">No interests added yet.</p>
               )}
             </div>

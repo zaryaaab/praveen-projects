@@ -3,11 +3,11 @@ export interface User {
   email: string;
   name: string;
   skills: string[];
-  interests: string[];
-  joinedAt: Date;
-  isMentor: boolean;
-  studyGroups: string[];
-  mentorshipSessions: number;
+  interests?: string[];
+  joinedAt?: Date;
+  isMentor?: boolean;
+  studyGroups?: string[];
+  mentorshipSessions?: number;
   avatar?: string;
 }
 

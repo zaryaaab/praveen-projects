@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Upload, 
   Search, 
@@ -12,17 +12,31 @@ import {
   User,
   Eye
 } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
-import { useAuth } from '../contexts/AuthContext';
+import { StudyGroup } from '../types';
 import Card from '../components/UI/Card';
 import Button from '../components/UI/Button';
 import Input from '../components/UI/Input';
 import Badge from '../components/UI/Badge';
 import Modal from '../components/UI/Modal';
+import { studyGroupService } from '../services/studyGroups';
+import { resourcesService } from '../services/resources';
+
+interface ResourceUser { name?: string; email?: string }
+interface ResourceItem {
+  _id: string;
+  title: string;
+  description: string;
+  file_base64: string;
+  uploaded_by?: ResourceUser;
+  group_id: string;
+  category: 'pdf' | 'video' | 'notes' | string;
+  tags: string[];
+  uploaded_at?: string | number | Date;
+  rating?: number;
+  type?: 'pdf' | 'video' | 'notes' | string;
+}
 
 const Resources: React.FC = () => {
-  const { resources, addResource } = useApp();
-  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedSubject, setSelectedSubject] = useState('all');
@@ -30,11 +44,17 @@ const Resources: React.FC = () => {
   const [newResource, setNewResource] = useState({
     title: '',
     description: '',
-    type: 'pdf' as 'pdf' | 'video' | 'notes' | 'link',
-    url: '',
+    type: 'pdf' as 'pdf' | 'video' | 'notes',
+    file: null as File | null,
     subject: '',
     tags: '',
   });
+
+  const [groups, setGroups] = useState<StudyGroup[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('');
+  const [groupResources, setGroupResources] = useState<ResourceItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const resourceTypes = [
     { value: 'all', label: 'All Types', icon: FileText },
@@ -57,39 +77,149 @@ const Resources: React.FC = () => {
     }
   };
 
-  const filteredResources = resources.filter(resource => {
+  const filteredResources = groupResources.filter((resource: ResourceItem) => {
     const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                         (Array.isArray(resource.tags) && resource.tags.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     
-    const matchesType = selectedType === 'all' || resource.type === selectedType;
-    const matchesSubject = selectedSubject === 'all' || selectedSubject === 'All Subjects' || resource.subject === selectedSubject;
+    const matchesType = selectedType === 'all' || resource.category === selectedType || resource.type === selectedType;
+    const matchesSubject = selectedSubject === 'all' || selectedSubject === 'All Subjects';
     
     return matchesSearch && matchesType && matchesSubject;
   });
 
-  const handleUploadResource = (e: React.FormEvent) => {
-    e.preventDefault();
-    const resource = {
-      ...newResource,
-      id: Math.random().toString(),
-      uploadedBy: user!,
-      createdAt: new Date(),
-      downloadCount: 0,
-      rating: 0,
-      tags: newResource.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+  useEffect(() => {
+    const loadGroups = async () => {
+      try {
+        setIsLoading(true);
+        const gs = await studyGroupService.getAllGroups();
+        setGroups(gs);
+        if (gs.length > 0 && !selectedGroupId) {
+          setSelectedGroupId(gs[0]._id);
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to load study groups';
+        setError(msg);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    
-    addResource(resource as any);
-    setIsUploadModalOpen(false);
-    setNewResource({
-      title: '',
-      description: '',
-      type: 'pdf',
-      url: '',
-      subject: '',
-      tags: '',
+    loadGroups();
+  }, []);
+
+  useEffect(() => {
+    const loadResources = async () => {
+      if (!selectedGroupId) {
+        setGroupResources([]);
+        return;
+      }
+      try {
+        setIsLoading(true);
+        const res = await resourcesService.getGroupResources(selectedGroupId);
+        setGroupResources(res as ResourceItem[]);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to load resources';
+        setError(msg);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadResources();
+  }, [selectedGroupId]);
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.includes(',') ? result.split(',')[1] : result;
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
+  };
+
+  const handleUploadResource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setError('');
+      if (!selectedGroupId) {
+        setError('Please select a group first');
+        return;
+      }
+      if (!newResource.file) {
+        setError('Please choose a file to upload');
+        return;
+      }
+      const file_base64 = await fileToBase64(newResource.file);
+      const tagsArr = newResource.tags.split(',').map(t => t.trim()).filter(Boolean);
+      const payload = {
+        title: newResource.title,
+        description: newResource.description,
+        file_base64,
+        group_id: selectedGroupId,
+        category: newResource.type,
+        tags: tagsArr
+      };
+      const saved = await resourcesService.uploadResource(payload);
+      setGroupResources([saved, ...groupResources]);
+      setIsUploadModalOpen(false);
+      setNewResource({
+        title: '',
+        description: '',
+        type: 'pdf',
+        file: null,
+        subject: '',
+        tags: '',
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Upload failed';
+      setError(msg);
+    }
+  };
+
+  const handlePreview = (resource: ResourceItem) => {
+    const category = resource.type || resource.category || 'pdf';
+    let mime = 'application/octet-stream';
+    if (category === 'pdf') mime = 'application/pdf';
+    if (category === 'video') mime = 'video/mp4';
+    if (category === 'notes') mime = 'text/plain';
+    const blob = b64toBlob(resource.file_base64, mime);
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
+
+  const handleDownload = (resource: ResourceItem) => {
+    const category = resource.type || resource.category || 'pdf';
+    let mime = 'application/octet-stream';
+    if (category === 'pdf') mime = 'application/pdf';
+    if (category === 'video') mime = 'video/mp4';
+    if (category === 'notes') mime = 'text/plain';
+    const blob = b64toBlob(resource.file_base64, mime);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${resource.title}.${category === 'notes' ? 'txt' : category === 'video' ? 'mp4' : 'pdf'}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const b64toBlob = (b64Data: string, contentType = '', sliceSize = 512) => {
+    const byteCharacters = atob(b64Data);
+    const byteArrays = [];
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+    return new Blob(byteArrays, { type: contentType });
   };
 
   return (
@@ -100,10 +230,22 @@ const Resources: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Learning Resources</h1>
           <p className="text-gray-600 mt-1">Discover and share study materials</p>
         </div>
-        <Button onClick={() => setIsUploadModalOpen(true)}>
-          <Upload className="w-4 h-4 mr-2" />
-          Upload Resource
-        </Button>
+        <div className="flex items-center gap-3">
+          <select
+            value={selectedGroupId}
+            onChange={(e) => setSelectedGroupId(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          >
+            {groups.length === 0 && <option value="">No groups available</option>}
+            {groups.map((g) => (
+              <option key={g._id} value={g._id}>{g.group_name}</option>
+            ))}
+          </select>
+          <Button onClick={() => setIsUploadModalOpen(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Resource
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -161,20 +303,31 @@ const Resources: React.FC = () => {
         </div>
       </Card>
 
+      {error && (
+        <div className="p-3 rounded-md bg-red-50 text-red-700 border border-red-200">
+          {error}
+        </div>
+      )}
+
       {/* Resources Grid */}
+      {isLoading && (
+        <div className="text-center py-6 text-gray-500">Loading resources...</div>
+      )}
+
+      {!isLoading && (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResources.map((resource) => {
-          const Icon = getResourceIcon(resource.type);
+        {filteredResources.map((resource: ResourceItem) => {
+          const Icon = getResourceIcon(resource.type || resource.category);
           
           return (
-            <Card key={resource.id} hover className="h-full flex flex-col">
+            <Card key={resource._id || resource.id} hover className="h-full flex flex-col">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
                     <Icon className="w-4 h-4 text-primary-600" />
                   </div>
                   <Badge variant="secondary" size="sm">
-                    {resource.type.toUpperCase()}
+                    {(resource.type || resource.category || 'resource').toUpperCase()}
                   </Badge>
                 </div>
                 
@@ -196,8 +349,8 @@ const Resources: React.FC = () => {
               
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="gray" size="sm">{resource.subject}</Badge>
-                  {resource.tags.slice(0, 3).map((tag) => (
+                  <Badge variant="gray" size="sm">{resource.category}</Badge>
+                  {resource.tags.slice(0, 3).map((tag: string) => (
                     <Badge key={tag} variant="primary" size="sm">{tag}</Badge>
                   ))}
                   {resource.tags.length > 3 && (
@@ -209,7 +362,7 @@ const Resources: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center">
                       <User className="w-4 h-4 mr-1" />
-                      {resource.uploadedBy.name}
+                      {resource.uploaded_by?.name || 'Unknown'}
                     </div>
                     <div className="flex items-center">
                       <Download className="w-4 h-4 mr-1" />
@@ -218,16 +371,16 @@ const Resources: React.FC = () => {
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
-                    {new Date(resource.createdAt).toLocaleDateString()}
+                    {new Date(resource.uploaded_at || Date.now()).toLocaleDateString()}
                   </div>
                 </div>
                 
                 <div className="flex space-x-2 pt-2">
-                  <Button variant="outline" size="sm" fullWidth>
+                  <Button variant="outline" size="sm" fullWidth onClick={() => handlePreview(resource)}>
                     <Eye className="w-4 h-4 mr-1" />
                     Preview
                   </Button>
-                  <Button size="sm" fullWidth>
+                  <Button size="sm" fullWidth onClick={() => handleDownload(resource)}>
                     <Download className="w-4 h-4 mr-1" />
                     Download
                   </Button>
@@ -237,6 +390,7 @@ const Resources: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {filteredResources.length === 0 && (
         <Card className="text-center py-12">
@@ -282,7 +436,6 @@ const Resources: React.FC = () => {
                 <option value="pdf">PDF Document</option>
                 <option value="video">Video</option>
                 <option value="notes">Study Notes</option>
-                <option value="link">External Link</option>
               </select>
             </div>
           </div>
@@ -301,14 +454,17 @@ const Resources: React.FC = () => {
             />
           </div>
           
-          <Input
-            label={newResource.type === 'link' ? 'URL' : 'File URL'}
-            value={newResource.url}
-            onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
-            placeholder={newResource.type === 'link' ? 'https://example.com' : 'Upload file or enter URL'}
-            fullWidth
-            required
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              File
+            </label>
+            <input
+              type="file"
+              onChange={(e) => setNewResource({ ...newResource, file: e.target.files?.[0] || null })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
           
           <div className="grid md:grid-cols-2 gap-4">
             <div>
@@ -345,7 +501,7 @@ const Resources: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" fullWidth>
+            <Button type="submit" fullWidth disabled={!selectedGroupId || !newResource.file}>
               Upload Resource
             </Button>
           </div>

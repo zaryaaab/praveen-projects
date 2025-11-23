@@ -12,6 +12,8 @@ export const StudyGroups: React.FC = () => {
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [joiningGroupId, setJoiningGroupId] = useState<string | null>(null);
+  const [joinedGroupIds, setJoinedGroupIds] = useState<Set<string>>(new Set());
 
   // Form state for creating a new group
   const [newGroup, setNewGroup] = useState({
@@ -51,12 +53,21 @@ export const StudyGroups: React.FC = () => {
   };
 
   const handleJoinGroup = async (groupId: string) => {
+    setJoiningGroupId(groupId);
     try {
       await studyGroupService.joinGroup(groupId);
-      // Refresh the groups list to show updated state
-      await fetchStudyGroups();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join study group');
+      setJoinedGroupIds(new Set([...Array.from(joinedGroupIds), groupId]));
+      setError('');
+    } catch (err: any) {
+      const msg = err?.message || '';
+      if (typeof msg === 'string' && msg.toLowerCase().includes('already a member')) {
+        setJoinedGroupIds(new Set([...Array.from(joinedGroupIds), groupId]));
+        setError('');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to join study group');
+      }
+    } finally {
+      setJoiningGroupId(null);
     }
   };
 
@@ -113,9 +124,10 @@ export const StudyGroups: React.FC = () => {
                 </span>
                 <Button
                   onClick={() => handleJoinGroup(group._id)}
-                  variant="outline"
+                  variant={joinedGroupIds.has(group._id) ? 'ghost' : 'outline'}
+                  disabled={joiningGroupId === group._id || joinedGroupIds.has(group._id)}
                 >
-                  Join Group
+                  {joinedGroupIds.has(group._id) ? 'Joined' : (joiningGroupId === group._id ? 'Joining...' : 'Join Group')}
                 </Button>
               </div>
             </div>
